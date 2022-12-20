@@ -29,19 +29,47 @@ class WikiText2Dataset(BaseDataset):
                 self.corpus_path = config.val_dataset
         self.encoding = config.encoding
 
-        with open(self.corpus_path, "r", encoding=config.encoding) as f:
-            if self.corpus_lines is None and not config.on_memory:
-                for _ in tqdm.tqdm(f, desc="Loading Dataset", total=config.corpus_lines):
+        with open(self.corpus_path, "r", encoding=self.encoding) as f:
+            if self.corpus_lines is None and not self.on_memory:
+                for _ in tqdm.tqdm(f, desc="Loading Dataset", total=self.corpus_lines):
                     self.corpus_lines += 1
 
-            if config.on_memory:
-                self.lines = [line[:-1].split("\t")
-                              for line in tqdm.tqdm(f, desc="Loading Dataset", total=config.corpus_lines)]
+            if self.on_memory:
+                it = 0
+                rest = []
+                self.lines = []
+                for line in tqdm.tqdm(f, desc="Loading Dataset", total=self.corpus_lines):
+                    if (not (" \n") == line):
+                        sentences = [s for s in line.split(".")]
+                        len_s = len(sentences)
+
+                        if rest == []:
+                            for i in range(int(len_s / 2)):
+                                self.lines += [[sentences[i], sentences[i + 1]]]
+                            if (len_s % 2):
+                                rest = sentences[-1]
+                            else:
+                                rest = []
+                        else:
+                            self.lines += [[rest, sentences[0]]]
+                            for i in range(int((len_s - 1) / 2)):
+                                self.lines += [[sentences[i + 1], sentences[i + 2]]]
+                            if ((len_s - 1) % 2):
+                                rest = sentences[-1]
+                            else:
+                                rest = []
+                """  print(self.lines)           
+                    if(it == 5):
+                        break
+                    it += 1"""
+
+                """self.lines = [line[:-1].split("\t")
+                              for line in tqdm.tqdm(f, desc="Loading Dataset", total=corpus_lines)]"""
                 self.corpus_lines = len(self.lines)
 
-        if not config.on_memory:
-            self.file = open(self.corpus_path, "r", encoding=config.encoding)
-            self.random_file = open(self.corpus_path, "r", encoding=config.encoding)
+        if not self.on_memory:
+            self.file = open(self.corpus_path, "r", encoding=self.encoding)
+            self.random_file = open(self.corpus_path, "r", encoding=self.encoding)
 
             for _ in range(random.randint(self.corpus_lines if self.corpus_lines < 1000 else 1000)):
                 self.random_file.__next__()

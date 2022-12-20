@@ -30,8 +30,9 @@ class BaseModel(BaseModule):
     def forward(self, *args, **kwargs):
         raise NotImplementedError
 
-    def __init__(self):
+    def __init__(self, config):
         super().__init__()
+        self.conf = config
         self.sample = None
         self.epoch = 0
 
