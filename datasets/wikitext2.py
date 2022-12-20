@@ -4,6 +4,7 @@ from typing import Literal
 import tqdm
 import torch
 import random
+import numpy as np
 
 from torch.utils.data import DataLoader
 
@@ -35,36 +36,8 @@ class WikiText2Dataset(BaseDataset):
                     self.corpus_lines += 1
 
             if self.on_memory:
-                it = 0
-                rest = []
-                self.lines = []
-                for line in tqdm.tqdm(f, desc="Loading Dataset", total=self.corpus_lines):
-                    if (not (" \n") == line):
-                        sentences = [s for s in line.split(".")]
-                        len_s = len(sentences)
-
-                        if rest == []:
-                            for i in range(int(len_s / 2)):
-                                self.lines += [[sentences[i], sentences[i + 1]]]
-                            if (len_s % 2):
-                                rest = sentences[-1]
-                            else:
-                                rest = []
-                        else:
-                            self.lines += [[rest, sentences[0]]]
-                            for i in range(int((len_s - 1) / 2)):
-                                self.lines += [[sentences[i + 1], sentences[i + 2]]]
-                            if ((len_s - 1) % 2):
-                                rest = sentences[-1]
-                            else:
-                                rest = []
-                """  print(self.lines)           
-                    if(it == 5):
-                        break
-                    it += 1"""
-
-                """self.lines = [line[:-1].split("\t")
-                              for line in tqdm.tqdm(f, desc="Loading Dataset", total=corpus_lines)]"""
+                self.lines = [line[:-1].split("\t")
+                              for line in tqdm.tqdm(f, desc="Loading Dataset", total=self.corpus_lines)]
                 self.corpus_lines = len(self.lines)
 
         if not self.on_memory:
@@ -78,20 +51,19 @@ class WikiText2Dataset(BaseDataset):
         return self.corpus_lines
 
     def __getitem__(self, item):
-        t1, t2, is_next_label = self.random_sent(item)
+        t1 = self.random_sent(item)
+
         t1_random, t1_label = self.random_word(t1)
-        t2_random, t2_label = self.random_word(t2)
 
         # [CLS] tag = SOS tag, [SEP] tag = EOS tag
         t1 = [self.vocab.sos_index] + t1_random + [self.vocab.eos_index]
-        t2 = t2_random + [self.vocab.eos_index]
 
         t1_label = [self.vocab.pad_index] + t1_label + [self.vocab.pad_index]
-        t2_label = t2_label + [self.vocab.pad_index]
 
-        segment_label = ([1 for _ in range(len(t1))] + [2 for _ in range(len(t2))])[:self.seq_len]
-        bert_input = (t1 + t2)[:self.seq_len]
-        bert_label = (t1_label + t2_label)[:self.seq_len]
+        segment_label = [1 for _ in range(len(t1))][:self.seq_len]
+    
+        bert_input = t1[:self.seq_len]
+        bert_label = t1_label[:self.seq_len]
 
         padding = [self.vocab.pad_index for _ in range(self.seq_len - len(bert_input))]
         bert_input.extend(padding), bert_label.extend(padding), segment_label.extend(padding)
@@ -99,60 +71,31 @@ class WikiText2Dataset(BaseDataset):
         output = {"bert_input": bert_input,
                   "bert_label": bert_label,
                   "segment_label": segment_label,
-                  "is_next": is_next_label}
+                  }
 
         return {key: torch.tensor(value) for key, value in output.items()}
 
     def random_word(self, sentence):
-        tokens = sentence.split()
-        output_label = []
-
+        tokens = sentence.split()        
+        n = min(self.seq_len, len(tokens))
+        ix = np.random.choice(np.arange(n))
+        output_label = [0]*n
         for i, token in enumerate(tokens):
-            prob = random.random()
-            if prob < 0.15:
-                prob /= 0.15
-
-                # 80% randomly change token to mask token
-                if prob < 0.8:
-                    tokens[i] = self.vocab.mask_index
-
-                # 10% randomly change token to random token
-                elif prob < 0.9:
-                    tokens[i] = random.randrange(len(self.vocab))
-
-                # 10% randomly change token to current token
-                else:
-                    tokens[i] = self.vocab.stoi.get(token, self.vocab.unk_index)
-
-                output_label.append(self.vocab.stoi.get(token, self.vocab.unk_index))
-
-            else:
+            if i!=ix:
                 tokens[i] = self.vocab.stoi.get(token, self.vocab.unk_index)
-                output_label.append(0)
-
+            else:
+                output_label[ix] = self.vocab.stoi.get(token, self.vocab.unk_index)
+                tokens[ix] = self.vocab.mask_index
         return tokens, output_label
 
-    def random_sent(self, index):
-        t1, t2 = self.get_corpus_line(index)
 
-        # output_text, label(isNotNext:0, isNext:1)
-        if random.random() > 0.5:
-            return t1, t2, 1
-        else:
-            return t1, self.get_random_line(), 0
+    def random_sent(self, index):
+        t1 = self.get_corpus_line(index)
+        return t1
 
     def get_corpus_line(self, item):
         if self.on_memory:
-            return self.lines[item][0], self.lines[item][1]
-        else:
-            line = self.file.__next__()
-            if line is None:
-                self.file.close()
-                self.file = open(self.corpus_path, "r", encoding=self.encoding)
-                line = self.file.__next__()
-
-            t1, t2 = line[:-1].split("\t")
-            return t1, t2
+            return self.lines[item][0]
 
     def get_random_line(self):
         if self.on_memory:
@@ -174,10 +117,10 @@ class WikiText2Dataset(BaseDataset):
 
     @staticmethod
     def extend_parser(parser) -> argparse.ArgumentParser:
-        parser.add_argument('--seq_len', type=int, default=20, help="maximum sequence length")
+        parser.add_argument('--seq_len', type=int, default=40, help="maximum sequence length")
         parser.add_argument('--train_dataset', type=str, default='data/wikitext2/wiki.train.tokens')
         parser.add_argument('--test_dataset', type=str, default='data/wikitext2/wiki.test.tokens')
-        parser.add_argument('--val_dataset', type=str, default='data/wikitext2/wiki.test.tokens')
+        parser.add_argument('--val_dataset', type=str, default='data/wikitext2/wiki.valid.tokens')
         parser.add_argument("--corpus_lines", type=int, default=None, help="total number of lines in corpus")
         parser.add_argument("--on_memory", type=bool, default=True, help="Loading on memory: true or false")
         parser.add_argument("--encoding", type=str, default='utf-8', help="text data encoding")
