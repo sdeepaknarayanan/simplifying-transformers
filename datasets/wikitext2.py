@@ -115,9 +115,9 @@ class WikiText2Dataset(BaseDataset):
     @staticmethod
     def extend_parser(parser) -> argparse.ArgumentParser:
         parser.add_argument('--seq_len', type=int, default=40, help="maximum sequence length")
-        parser.add_argument('--train_dataset', type=str, default='data/wikitext2/wiki.valid.tokens')
-        parser.add_argument('--test_dataset', type=str, default='data/wikitext2/wiki.test.tokens')
-        parser.add_argument('--val_dataset', type=str, default='data/wikitext2/wiki.valid.tokens')
+        parser.add_argument('--train_dataset', type=str, default='data/wikitext2/train_data_single_sentence.txt')
+        parser.add_argument('--test_dataset', type=str, default='data/wikitext2/test_data_single_sentence.txt')
+        parser.add_argument('--val_dataset', type=str, default='data/wikitext2/valid_data_single_sentence.txt')
         parser.add_argument("--corpus_lines", type=int, default=None, help="total number of lines in corpus")
         parser.add_argument("--on_memory", type=bool, default=True, help="Loading on memory: true or false")
         parser.add_argument("--encoding", type=str, default='utf-8', help="text data encoding")
