@@ -15,9 +15,8 @@ module load cudnn/7.6.4
 echo installing pytorch
 pip3 install torch==1.10.0+cu113 torchvision==0.11.1+cu113 torchaudio===0.10.0+cu113 -f https://download.pytorch.org/whl/cu113/torch_stable.html
 
-echo installing lpips
-pip install lpips
-
+#echo installing lpips
+#pip install lpips
 
 echo loading eth_proxy
 module load eth_proxy
