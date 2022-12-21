@@ -118,7 +118,7 @@ class WikiText2Dataset(BaseDataset):
     @staticmethod
     def extend_parser(parser) -> argparse.ArgumentParser:
         parser.add_argument('--seq_len', type=int, default=40, help="maximum sequence length")
-        parser.add_argument('--train_dataset', type=str, default='data/wikitext2/wiki.train.tokens')
+        parser.add_argument('--train_dataset', type=str, default='data/wikitext2/wiki.valid.tokens')
         parser.add_argument('--test_dataset', type=str, default='data/wikitext2/wiki.test.tokens')
         parser.add_argument('--val_dataset', type=str, default='data/wikitext2/wiki.valid.tokens')
         parser.add_argument("--corpus_lines", type=int, default=None, help="total number of lines in corpus")
