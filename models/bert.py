@@ -8,6 +8,7 @@ from models.base_model import BaseModel
 from models.embedding.bert import BERTEmbedding
 from models.modules.transformer_block import TransformerBlock
 
+
 class MaskedLanguageModel(nn.Module):
     """
     predicting origin token from masked input sequence
@@ -25,6 +26,7 @@ class MaskedLanguageModel(nn.Module):
 
     def forward(self, x):
         return self.softmax(self.linear(x))
+
 
 class BERT(BaseModel):
     def __init__(self, config, vocab_size: int):
@@ -89,7 +91,6 @@ class BERT(BaseModel):
         return parser
 
 
-
 class BERTLM(BaseModel):
     def __init__(self, config, vocab_size: int):
         super(BERTLM, self).__init__(config)
@@ -105,8 +106,7 @@ class BERTLM(BaseModel):
         self.attn_heads = config.heads
         self.device = config.device
 
-        self.mask_lm = MaskedLanguageModel(self.hidden, vocab_size)
-
+        self.mask_lm = MaskedLanguageModel(self.hidden, vocab_size).to(self.conf.device)
 
         # paper noted they used 4*hidden_size for ff_network_hidden_size
         self.feed_forward_hidden = self.hidden * 4
@@ -187,5 +187,3 @@ class ScheduledOptim():
 
         for param_group in self._optimizer.param_groups:
             param_group['lr'] = lr
-
-

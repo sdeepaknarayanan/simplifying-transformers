@@ -127,3 +127,5 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+/models/_checkpoints/wikitext2_wikitext2/
+.idea

@@ -61,7 +61,7 @@ class WikiText2Dataset(BaseDataset):
         t1_label = [self.vocab.pad_index] + t1_label + [self.vocab.pad_index]
 
         segment_label = [1 for _ in range(len(t1))][:self.seq_len]
-    
+
         bert_input = t1[:self.seq_len]
         bert_label = t1_label[:self.seq_len]
 
@@ -76,18 +76,17 @@ class WikiText2Dataset(BaseDataset):
         return {key: torch.tensor(value) for key, value in output.items()}
 
     def random_word(self, sentence):
-        tokens = sentence.split()        
+        tokens = sentence.split()
         n = min(self.seq_len, len(tokens))
         ix = np.random.choice(np.arange(n))
-        output_label = [0]*n
+        output_label = [0] * n
         for i, token in enumerate(tokens):
-            if i!=ix:
+            if i != ix:
                 tokens[i] = self.vocab.stoi.get(token, self.vocab.unk_index)
             else:
                 output_label[ix] = self.vocab.stoi.get(token, self.vocab.unk_index)
                 tokens[ix] = self.vocab.mask_index
         return tokens, output_label
-
 
     def random_sent(self, index):
         t1 = self.get_corpus_line(index)
@@ -112,8 +111,6 @@ class WikiText2Dataset(BaseDataset):
 
     def get_data_loader(self):
         return DataLoader(self, batch_size=self.config.batch_size, num_workers=self.config.num_workers)
-
-
 
     @staticmethod
     def extend_parser(parser) -> argparse.ArgumentParser:
