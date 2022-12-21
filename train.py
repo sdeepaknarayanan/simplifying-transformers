@@ -47,7 +47,7 @@ def main(conf):
                 e=epoch, b=index+1, t=len(train_loader), l=loss))
 
         # Save model checkpoint & write the accumulated losses to logs and reset the accumulation
-        criterion.complete_epoch(epoch=epoch, mode='train')
+        # criterion.complete_epoch(epoch=epoch, mode='train')
         model.save_and_step()
 
         # Evaluate on test-set.
@@ -56,7 +56,7 @@ def main(conf):
             print('Epoch {e:>2}, Batch [{b:>5}/{t:<5}] eval'.format(e=epoch, b=index+1, t=len(test_loader)))
 
         # Write the accumulated losses to logs and reset and reset the accumulation
-        criterion.complete_epoch(epoch=epoch, mode='test')
+        # criterion.complete_epoch(epoch=epoch, mode='test')
 
         # Save sample images containing prediction and label side by side
         if conf.print_samples:

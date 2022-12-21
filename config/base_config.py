@@ -17,7 +17,7 @@ class BaseConfig:
 
         parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
-        parser.add_argument('--model', type=str, default='BERT', help='Choose the network to work with.',
+        parser.add_argument('--model', type=str, default='BERTLM', help='Choose the network to work with.',
                             choices=NETWORKS)
         parser.add_argument('--dataset', type=str, default='wikitext2', help='Choose the dataset to train on.',
                             choices=DATASETS)

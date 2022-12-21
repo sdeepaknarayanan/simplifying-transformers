@@ -87,7 +87,7 @@ class BaseModel(BaseModule):
         # returned here
         _loss = None
         if loss is not None:
-            _loss = loss(data)
+            _loss = loss(data['pred'].transpose(1, 2), data['bert_label'])
 
         return data, _loss.item()
 
@@ -99,7 +99,7 @@ class BaseModel(BaseModule):
         :return:
         """
         file_dir = self.conf.storage_directory + '/models/_checkpoints/' + self.conf.dataset + '_' +\
-                   self.conf.dataset_label + '/'
+                   self.conf.dataset + '/'
 
         if not os.path.exists(file_dir):
             os.makedirs(file_dir)
