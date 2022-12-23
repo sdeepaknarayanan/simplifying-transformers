@@ -2,7 +2,7 @@ import torch
 import logging
 import os
 from abc import abstractmethod
-from typing import overload
+from typing import overload, Tuple
 
 
 class BaseModule(torch.nn.Module):
@@ -56,10 +56,10 @@ class BaseModel(BaseModule):
         data = self.preprocess_data(data)
 
         # make prediction for the current batch
-        data.update({'pred': self.forward(data['bert_input'], data['segment_label'])})
-
+        # data.update({'pred': self.forward(data['bert_input'], data['segment_label'])})
+        prediction = self.forward(data['bert_input'], data['segment_label'])
         # compute loss, followed by backward pass and optimization step to improve weights
-        loss = criterion(data['pred'].transpose(1, 2), data['bert_label'])
+        loss = criterion(prediction.transpose(1, 2), data['bert_label'])
 
         for param in self.parameters():
             param.grad = None
@@ -73,7 +73,7 @@ class BaseModel(BaseModule):
         self.sample = batch
 
     @torch.no_grad()
-    def evaluate(self, data, loss=None):
+    def evaluate(self, data, criterion=None) -> Tuple[dict, float]:
         self.eval()
 
         # send data-points to device (GPU)
@@ -82,14 +82,11 @@ class BaseModel(BaseModule):
 
         # make prediction for the current batch
         data.update({'pred': self.forward(data['bert_input'], data['segment_label'])})
-
         # compute loss if one is provided. make sure the losses output their values to some log, as no loss value is
         # returned here
-        _loss = None
-        if loss is not None:
-            _loss = loss(data['pred'].transpose(1, 2), data['bert_label'])
+        loss = criterion(data['pred'].transpose(1, 2), data['bert_label']).item() if criterion is not None else None
 
-        return data, _loss.item()
+        return data, loss
 
     def save_model(self, running: bool = True):
         """
@@ -122,7 +119,7 @@ class BaseModel(BaseModule):
         # TODO: implement
         # load and predict the sample batch
         data = self.sample.copy()
-        data = self.evaluate(data)
+        data, loss = self.evaluate(data)
 
     def load_state(self):
         path = self.conf.model_checkpoint

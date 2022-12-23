@@ -22,7 +22,7 @@ class BaseConfig:
         parser.add_argument('--dataset', type=str, default='wikitext2', help='Choose the dataset to train on.',
                             choices=DATASETS)
 
-        parser.add_argument('--vocab_path', type=str, default="data/wikitext2.pkl",
+        parser.add_argument('--vocab_path', type=str, default="data/wikitext2/vocab.pkl",
                             help='built vocab model path with bert-vocab')
         parser.add_argument('--vocab_max_size', type=int, default=None, help='Number of epochs to train for.')
         parser.add_argument('--vocab_min_frequency', type=int, default=1,
