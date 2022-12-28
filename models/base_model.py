@@ -125,11 +125,13 @@ class BaseModel(BaseModule):
         path = self.conf.model_checkpoint
         tmp = path
 
+        print(path)
         if os.path.exists(path):
             try:
                 from collections import OrderedDict
 
                 checkpoint = torch.load(path)
+                print("Loaded checkpoint")
                 try:
                     state_dict = checkpoint['model_state_dict']
                     if self.conf.train:
@@ -204,5 +206,5 @@ class BaseModel(BaseModule):
     def extend_parser(parser):
         parser.add_argument('--model_checkpoint', type=str, default='', help=
                             'path to a model_state_dict which will be loaded into the model before training/eval')
-
+        parser.add_argument('--storage_directory', type=str, default="")
         return parser

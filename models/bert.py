@@ -108,17 +108,18 @@ class BERTLM(BaseModel):
 
         self.mask_lm = MaskedLanguageModel(self.hidden, vocab_size).to(self.conf.device)
 
+        self.bert = BERT(config, vocab_size)
         # paper noted they used 4*hidden_size for ff_network_hidden_size
-        self.feed_forward_hidden = self.hidden * 4
-
-        # embedding for BERT, sum of positional, segment, token embeddings
-        self.embedding = BERTEmbedding(vocab_size=vocab_size, embed_size=self.hidden).to(self.conf.device)
-
-        # multi-layers transformer blocks, deep network
-        self.transformer_blocks = nn.ModuleList([
-            TransformerBlock(self.hidden, self.attn_heads, self.hidden * 4, config.dropout).to(self.conf.device)
-            for _ in range(config.layers)
-        ])
+        # self.feed_forward_hidden = self.hidden * 4
+        #
+        # # embedding for BERT, sum of positional, segment, token embeddings
+        # self.embedding = BERTEmbedding(vocab_size=vocab_size, embed_size=self.hidden).to(self.conf.device)
+        #
+        # # multi-layers transformer blocks, deep network
+        # self.transformer_blocks = nn.ModuleList([
+        #     TransformerBlock(self.hidden, self.attn_heads, self.hidden * 4, config.dropout).to(self.conf.device)
+        #     for _ in range(config.layers)
+        # ])
 
         self.optimizer = Adam(
             self.parameters(),
@@ -133,19 +134,17 @@ class BERTLM(BaseModel):
         )
 
     def forward(self, x, segment_info):
-        # attention masking for padded token
-        # torch.ByteTensor([batch_size, 1, seq_len, seq_len)
-        mask = (x > 0).unsqueeze(1).repeat(1, x.size(1), 1).unsqueeze(1)
-
-        # embedding the indexed sequence to sequence of vectors
-        x = self.embedding(x, segment_info)
-
-        # running over multiple transformer blocks
-        for transformer in self.transformer_blocks:
-            x = transformer.forward(x, mask)
-
+        x = self.bert(x, segment_info)
         return self.mask_lm(x)
 
+    def load_state(self):
+        print("Lading State for BERTML")
+        self.bert.load_state()
+        # TODO: change to distinguish between bert and bertml checkpoints
+        # try:
+        #     self.load_state()
+        # except:
+        #     self.bert.load_state()
     @staticmethod
     def extend_parser(parser) -> argparse.ArgumentParser:
         parser.add_argument('--hidden_features', type=int, default=768, help='# of hidden features')

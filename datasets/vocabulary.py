@@ -125,7 +125,7 @@ class TorchVocabUnsorted(object):
         itos: A list of token strings indexed by their numerical identifiers.
     """
 
-    def __init__(self, counter, max_size=None, min_freq=1, specials=['<pad>', '<oov>'],
+    def __init__(self, counter, max_size=None, min_freq=1, specials=["[PAD]", "[UNK]", "[CLS]", "[SEP]", "[MASK]"],
                  vectors=None, unk_init=None, vectors_cache=None):
         """Create a Vocab object from a collections.Counter.
         Arguments:
@@ -225,11 +225,12 @@ class BertVocab(TorchVocabUnsorted):
         bert_vocab.close()
 
         self.pad_index = 0
-        self.unk_index = 1
-        self.eos_index = 2
-        self.sos_index = 3
-        self.mask_index = 4
-        super().__init__(bert_counter, specials=["<pad>", "<unk>", "<eos>", "<sos>", "<mask>"],
+        self.unk_index = 101
+        self.eos_index = 102
+        self.sos_index = 103
+        self.mask_index = 104
+
+        super().__init__(bert_counter, specials=["[PAD]", "[UNK]", "[CLS]", "[SEP]", "[MASK]"],
                          max_size=config.vocab_max_size, min_freq=config.vocab_min_frequency)
 
 

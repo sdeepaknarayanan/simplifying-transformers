@@ -12,7 +12,7 @@ class BaseConfig:
     def __init__(self):
         self.name = 'base options'
 
-        NETWORKS = ['BERT']
+        NETWORKS = ['BERT', 'BERTLM']
         DATASETS = ['wikitext2']
 
         parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
@@ -21,6 +21,8 @@ class BaseConfig:
                             choices=NETWORKS)
         parser.add_argument('--dataset', type=str, default='wikitext2', help='Choose the dataset to train on.',
                             choices=DATASETS)
+        parser.add_argument('--model_checkpoint', type=str, default="models/_checkpoints/wikitext2_wikitext2/BERT-latest.pth",
+                            help="this checkpoint is loaded before training")
 
         parser.add_argument('--vocab', type=str, default='bert-google', choices=['bert-google', 'codertimo'])
         parser.add_argument('--bert_google_vocab', type=str, default='data/uncased_L-12_H-768_A-12/vocab.txt')
