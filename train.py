@@ -1,6 +1,6 @@
 import logging
 
-import torch.backends.cudnn
+import torch
 
 import datasets
 import models
