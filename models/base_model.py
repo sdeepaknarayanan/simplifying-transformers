@@ -110,7 +110,7 @@ class BaseModel(BaseModule):
             'epoch': self.epoch,
         }, file_dir + file_name)
 
-    def print_sample(self):
+    def print_sample(self, data):
         """
         Predict the sample batch with the current model weights and store the result in the out folder
         :return:
@@ -118,8 +118,12 @@ class BaseModel(BaseModule):
 
         # TODO: implement
         # load and predict the sample batch
-        data = self.sample.copy()
-        data, loss = self.evaluate(data)
+        data, _ = self.evaluate(data)
+        print(data['pred'].size())
+        print(torch.argmax(data['pred'][0]))
+        print(data['bert_input'][0])
+        print(data['segment_label'][0])
+        exit()
 
     def load_state(self):
         path = self.conf.model_checkpoint

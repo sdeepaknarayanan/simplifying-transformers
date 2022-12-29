@@ -29,7 +29,7 @@ class MaskedLanguageModel(nn.Module):
 
 
 class BERT(BaseModel):
-    def __init__(self, config, vocab_size: int):
+    def __init__(self, config, vocab_size: int, child: bool = True):
         super(BERT, self).__init__(config)
         """
         :param vocab_size: vocab_size of total words
@@ -60,12 +60,12 @@ class BERT(BaseModel):
             lr=self.conf.lr,
             betas=(self.conf.adam_beta1, self.conf.adam_beta2),
             weight_decay=self.conf.adam_weight_decay
-        )
+        ) if config.train and not child else None
         self.optim_schedule = ScheduledOptim(
             self.optimizer,
             self.hidden,
             n_warmup_steps=self.conf.warmup_steps
-        )
+        ) if config.train and not child else None
 
     def forward(self, x, segment_info):
         # attention masking for padded token
@@ -106,45 +106,27 @@ class BERTLM(BaseModel):
         self.attn_heads = config.heads
         self.device = config.device
 
+        self.bert = BERT(config, vocab_size, True)
+
         self.mask_lm = MaskedLanguageModel(self.hidden, vocab_size).to(self.conf.device)
 
-        self.bert = BERT(config, vocab_size)
-        # paper noted they used 4*hidden_size for ff_network_hidden_size
-        # self.feed_forward_hidden = self.hidden * 4
-        #
-        # # embedding for BERT, sum of positional, segment, token embeddings
-        # self.embedding = BERTEmbedding(vocab_size=vocab_size, embed_size=self.hidden).to(self.conf.device)
-        #
-        # # multi-layers transformer blocks, deep network
-        # self.transformer_blocks = nn.ModuleList([
-        #     TransformerBlock(self.hidden, self.attn_heads, self.hidden * 4, config.dropout).to(self.conf.device)
-        #     for _ in range(config.layers)
-        # ])
 
         self.optimizer = Adam(
             self.parameters(),
             lr=self.conf.lr,
             betas=(self.conf.adam_beta1, self.conf.adam_beta2),
             weight_decay=self.conf.adam_weight_decay
-        )
+        ) if config.train else None
         self.optim_schedule = ScheduledOptim(
             self.optimizer,
             self.hidden,
             n_warmup_steps=self.conf.warmup_steps
-        )
+        ) if config.train else None
 
     def forward(self, x, segment_info):
         x = self.bert(x, segment_info)
         return self.mask_lm(x)
 
-    def load_state(self):
-        print("Lading State for BERTML")
-        self.bert.load_state()
-        # TODO: change to distinguish between bert and bertml checkpoints
-        # try:
-        #     self.load_state()
-        # except:
-        #     self.bert.load_state()
     @staticmethod
     def extend_parser(parser) -> argparse.ArgumentParser:
         parser.add_argument('--hidden_features', type=int, default=768, help='# of hidden features')

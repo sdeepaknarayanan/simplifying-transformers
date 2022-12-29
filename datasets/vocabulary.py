@@ -233,6 +233,17 @@ class BertVocab(TorchVocabUnsorted):
         super().__init__(bert_counter, specials=["[PAD]", "[UNK]", "[CLS]", "[SEP]", "[MASK]"],
                          max_size=config.vocab_max_size, min_freq=config.vocab_min_frequency)
 
+    def from_seq(self, seq, join=False, with_pad=False):
+        words = [self.itos[idx]
+                 if idx < len(self.itos)
+                 else "<%d>" % idx
+                 for idx in seq
+                 if not with_pad or idx != self.pad_index]
+
+        return " ".join(words) if join else words
+
+    def from_index(self, index):
+        return self.itos[index]
 
 # Building Vocab with text files
 class WordVocab(Vocab):
