@@ -7,27 +7,20 @@ import datasets
 import models
 
 
-class BaseConfig:
+class BlockConfig:
 
     def __init__(self):
         self.name = 'base options'
 
-        NETWORKS = ['BERT','BERTLM','BLOCK']
-        DATASETS = ['wikitext2','block_training']
+        NETWORKS = ['BLOCK']
+        DATASETS = ['block_training']
 
         parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
-        parser.add_argument('--model', type=str, default='BERTLM', help='Choose the network to work with.',
+        parser.add_argument('--model', type=str, default='BLOCK', help='Choose the network to work with.',
                             choices=NETWORKS)
-        parser.add_argument('--dataset', type=str, default='wikitext2', help='Choose the dataset to train on.',
+        parser.add_argument('--dataset', type=str, default='block_training', help='Choose the dataset to train on.',
                             choices=DATASETS)
-
-        parser.add_argument('--vocab_path', type=str, default="data/wikitext2/vocab.pkl",
-                            help='built vocab model path with bert-vocab')
-        parser.add_argument('--vocab_max_size', type=int, default=None, help='Number of epochs to train for.')
-        parser.add_argument('--vocab_min_frequency', type=int, default=1,
-                            help='The minimum frequency needed to include a token in the vocabulary. Values less than'
-                                 '1 will be set to 1. Default: 1')
 
         parser.add_argument('--storage_directory', type=str, default=os.path.dirname(os.path.abspath(__file__)).replace(
             '\\config', '').replace('/config', ''),
@@ -50,9 +43,10 @@ class BaseConfig:
 
 
         self.parser = parser
-        print(self.parser)
         self.parser = self.gather()
+     
 
+        
     def get_parser(self):
         return self.parser
 
