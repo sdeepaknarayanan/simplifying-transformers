@@ -135,6 +135,9 @@ class BERTLM(BaseModel):
     def forward(self, x, segment_info):
         # attention masking for padded token
         # torch.ByteTensor([batch_size, 1, seq_len, seq_len)
+
+        print(x.shape)
+        assert(False)
         mask = (x > 0).unsqueeze(1).repeat(1, x.size(1), 1).unsqueeze(1)
 
         # embedding the indexed sequence to sequence of vectors
