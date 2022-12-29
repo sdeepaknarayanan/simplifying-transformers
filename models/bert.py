@@ -125,7 +125,8 @@ class BERTLM(BaseModel):
 
     def forward(self, x, segment_info):
         x = self.bert(x, segment_info)
-        return self.mask_lm(x)
+        x = self.mask_lm(x)
+        return x
 
     @staticmethod
     def extend_parser(parser) -> argparse.ArgumentParser:

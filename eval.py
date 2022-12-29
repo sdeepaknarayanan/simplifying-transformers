@@ -30,10 +30,10 @@ def main(conf):
         data, _ = model.evaluate(data)
         for ind in range(config.batch_size):
             sentence = vocab.from_seq(data['bert_input'][ind])
-            word = vocab.from_index(torch.argmax(data['pred'][ind]))
-            print(sentence, word)
+            predicted = vocab.from_seq(torch.argmax(data['pred'][ind], dim=1))
+            print("Input: ", sentence)
+            print("Prediction: ", predicted)
         exit()
-
 
 
 if __name__ == "__main__":
