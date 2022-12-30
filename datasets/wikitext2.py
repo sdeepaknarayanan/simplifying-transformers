@@ -53,7 +53,7 @@ class WikiText2Dataset(BaseDataset):
     def __getitem__(self, item):
         t1 = self.random_sent(item)
 
-        t1_random, t1_label = self.random_word(t1)
+        t1_random, t1_label, mask_index = self.random_word(t1)
 
         # [CLS] tag = SOS tag, [SEP] tag = EOS tag
         t1 = [self.vocab.sos_index] + t1_random + [self.vocab.eos_index]
@@ -67,10 +67,10 @@ class WikiText2Dataset(BaseDataset):
 
         padding = [self.vocab.pad_index for _ in range(self.seq_len - len(bert_input))]
         bert_input.extend(padding), bert_label.extend(padding), segment_label.extend(padding)
-
         output = {"bert_input": bert_input,
                   "bert_label": bert_label,
                   "segment_label": segment_label,
+                  "mask_index": mask_index + 1
                   }
 
         return {key: torch.tensor(value) for key, value in output.items()}
@@ -86,7 +86,7 @@ class WikiText2Dataset(BaseDataset):
             else:
                 output_label[ix] = self.vocab.stoi.get(token, self.vocab.unk_index)
                 tokens[ix] = self.vocab.mask_index
-        return tokens, output_label
+        return tokens, output_label, ix
 
     def random_sent(self, index):
         t1 = self.get_corpus_line(index)

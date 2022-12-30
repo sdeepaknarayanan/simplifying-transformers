@@ -125,7 +125,7 @@ class TorchVocabUnsorted(object):
         itos: A list of token strings indexed by their numerical identifiers.
     """
 
-    def __init__(self, counter, max_size=None, min_freq=1, specials=["[PAD]", "[UNK]", "[CLS]", "[SEP]", "[MASK]"],
+    def __init__(self, counter, word_list, max_size=None, min_freq=1, specials=["[PAD]", "[UNK]", "[CLS]", "[SEP]", "[MASK]"],
                  vectors=None, unk_init=None, vectors_cache=None):
         """Create a Vocab object from a collections.Counter.
         Arguments:
@@ -146,27 +146,18 @@ class TorchVocabUnsorted(object):
                 returns a Tensor of the same size. Default: torch.Tensor.zero_
             vectors_cache: directory for cached vectors. Default: '.vector_cache'
         """
-        self.freqs = counter
+        # self.freqs = counter
         counter = counter.copy()
-        min_freq = max(min_freq, 1)
+        # tokens are indexed with starting index 1, hence add un
+        freqs = []
+        itos = []
+        for word in word_list:
+            itos.append(word)
+            freqs.append(counter[word] if counter[word] else 1.0)
 
-        self.itos = list(specials)
-        # frequencies of special tokens are not counted when building vocabulary
-        # in frequency order
-        for tok in specials:
-            del counter[tok]
+        self.itos = itos
+        self.freqs = freqs
 
-        max_size = None if max_size is None else max_size + len(self.itos)
-
-        # sort by frequency, then alphabetically
-        words_and_frequencies = counter.items()
-
-        for word, freq in words_and_frequencies:
-            if freq < min_freq or len(self.itos) == max_size:
-                break
-            self.itos.append(word)
-
-        # stoi is simply a reverse dict for itos
         self.stoi = {tok: i for i, tok in enumerate(self.itos)}
 
         self.vectors = None
@@ -217,30 +208,34 @@ class BertVocab(TorchVocabUnsorted):
         text_file.close()
 
         bert_counter = Counter()
+        word_list = []
         with open(config.bert_google_vocab) as bert_vocab:
             for word in tqdm.tqdm(bert_vocab):
                 word = word.replace("\n", "").replace("\t", "")
                 bert_counter[word] = counter[word] if word in counter else 1
+                word_list.append(word)
 
         bert_vocab.close()
-
         self.pad_index = 0
         self.unk_index = 101
         self.eos_index = 102
         self.sos_index = 103
         self.mask_index = 104
 
-        super().__init__(bert_counter, specials=["[PAD]", "[UNK]", "[CLS]", "[SEP]", "[MASK]"],
+        super().__init__(bert_counter, word_list, specials=["[PAD]", "[UNK]", "[CLS]", "[SEP]", "[MASK]"],
                          max_size=config.vocab_max_size, min_freq=config.vocab_min_frequency)
 
     def from_seq(self, seq, join=False, with_pad=False):
-        words = [self.itos[idx]
-                 if idx < len(self.itos)
+        words = [self.itos[idx-1]
+                 if idx <= len(self.itos)
                  else "<%d>" % idx
                  for idx in seq
                  if not with_pad or idx != self.pad_index]
 
         return " ".join(words) if join else words
+
+    def from_index(self, index):
+        return self.itos[index-1]
 
     def from_index(self, index):
         return self.itos[index]
