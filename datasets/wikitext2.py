@@ -82,9 +82,9 @@ class WikiText2Dataset(BaseDataset):
         output_label = [0] * n
         for i, token in enumerate(tokens):
             if i != ix:
-                tokens[i] = self.vocab.stoi.get(token, self.vocab.unk_index)
+                tokens[i] = self.vocab.stoi.get(token.lower(), self.vocab.unk_index)
             else:
-                output_label[ix] = self.vocab.stoi.get(token, self.vocab.unk_index)
+                output_label[ix] = self.vocab.stoi.get(token.lower(), self.vocab.unk_index)
                 tokens[ix] = self.vocab.mask_index
         return tokens, output_label, ix
 

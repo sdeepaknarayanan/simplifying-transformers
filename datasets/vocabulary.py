@@ -217,16 +217,16 @@ class BertVocab(TorchVocabUnsorted):
 
         bert_vocab.close()
         self.pad_index = 0
-        self.unk_index = 101
+        self.unk_index = 100
         self.eos_index = 102
-        self.sos_index = 103
-        self.mask_index = 104
+        self.sos_index = 102
+        self.mask_index = 103
 
         super().__init__(bert_counter, word_list, specials=["[PAD]", "[UNK]", "[CLS]", "[SEP]", "[MASK]"],
                          max_size=config.vocab_max_size, min_freq=config.vocab_min_frequency)
 
     def from_seq(self, seq, join=False, with_pad=False):
-        words = [self.itos[idx-1]
+        words = [self.itos[idx]
                  if idx <= len(self.itos)
                  else "<%d>" % idx
                  for idx in seq
