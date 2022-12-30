@@ -125,7 +125,9 @@ class BERTLM(BaseModel):
 
     def forward(self, x, segment_info):
         x = self.bert(x, segment_info)
+        print(x.size())
         x = self.mask_lm(x)
+        print(x.size())
         return x
 
     @staticmethod

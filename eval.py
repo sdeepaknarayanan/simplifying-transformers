@@ -32,7 +32,7 @@ def main(conf):
         for ind in range(data['pred'].size(0)):
 
             data['pred'][ind, data["mask_index"][ind], 101] = -1e10 # disregard CLS token
-            data['pred'][ind, data["mask_index"][ind], 103] = -1e10
+            # data['pred'][ind, data["mask_index"][ind], 103] = -1e10
             # data['pred'][ind, data["mask_index"][ind], 105] = -1e10
 
             sentence = vocab.from_seq(torch.masked_select(data['bert_input'][ind], data['segment_label'][ind].bool()))

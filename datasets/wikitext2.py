@@ -56,9 +56,12 @@ class WikiText2Dataset(BaseDataset):
         t1_random, t1_label, mask_index = self.random_word(t1)
 
         # [CLS] tag = SOS tag, [SEP] tag = EOS tag
-        t1 = [self.vocab.sos_index] + t1_random + [self.vocab.eos_index]
 
-        t1_label = [self.vocab.pad_index] + t1_label + [self.vocab.pad_index]
+        # t1 = [self.vocab.sos_index] + t1_random + [self.vocab.eos_index]
+        t1 = [self.vocab.sos_index] + t1_random
+
+        # t1_label = [self.vocab.pad_index] + t1_label + [self.vocab.pad_index]
+        t1_label = [self.vocab.pad_index] + t1_label
 
         segment_label = [1 for _ in range(len(t1))][:self.seq_len]
 

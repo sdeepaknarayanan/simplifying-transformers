@@ -219,7 +219,7 @@ class BertVocab(TorchVocabUnsorted):
         self.pad_index = 0
         self.unk_index = 100
         self.eos_index = 102
-        self.sos_index = 102
+        self.sos_index = 101
         self.mask_index = 103
 
         super().__init__(bert_counter, word_list, specials=["[PAD]", "[UNK]", "[CLS]", "[SEP]", "[MASK]"],
