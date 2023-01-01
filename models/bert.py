@@ -7,7 +7,7 @@ from torch.optim import Adam
 from models.base_model import BaseModel
 from models.embedding.bert import BERTEmbedding
 from models.modules.transformer_block import TransformerBlock
-
+from models.modules.sublayer_connection import LayerNorm
 
 class MaskedLanguageModel(nn.Module):
     """
@@ -21,12 +21,17 @@ class MaskedLanguageModel(nn.Module):
         :param vocab_size: total vocab size
         """
         super().__init__()
-        self.linear = nn.Linear(hidden, vocab_size)
+        self.linear = nn.Linear(hidden, hidden)
+        self.act = nn.GELU()
+        self.layer_norm = LayerNorm(hidden)
+        self.decoder = nn.Linear(hidden, vocab_size)
         self.softmax = nn.LogSoftmax(dim=-1)
 
     def forward(self, x):
-        return self.softmax(self.linear(x))
-
+        x = self.linear(x)
+        x = self.act(x)
+        x = self.layer_norm(x)
+        return self.decoder(x)
 
 class BERT(BaseModel):
     def __init__(self, config, vocab_size: int, child: bool = True):
@@ -125,9 +130,7 @@ class BERTLM(BaseModel):
 
     def forward(self, x, segment_info):
         x = self.bert(x, segment_info)
-        print(x.size())
         x = self.mask_lm(x)
-        print(x.size())
         return x
 
     @staticmethod
