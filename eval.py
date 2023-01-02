@@ -29,8 +29,10 @@ def main(conf):
     f1_accumulated = 0.
     ce_accumulated = 0.
     p_accumulated = 0.
+    i = 0
     with tqdm.tqdm(test_loader, unit="batch") as tq_loader:
         for index, data in enumerate(tq_loader):
+            i = index
             tq_loader.set_description(f"Batch: {index}")
             data, (f1, ce, p) = model.evaluate(data)
             f1_accumulated = f1_accumulated + f1
@@ -39,6 +41,8 @@ def main(conf):
             tq_loader.set_postfix(f1=f1_accumulated / (index + 1),
                                   ce=ce_accumulated / (index + 1),
                                   perplexity=p_accumulated / (index + 1))
+
+    print(f"Cross Entropy: {ce_accumulated}, F1: {f1_accumulated}, Perplexity: {p_accumulated}")
 
 
 if __name__ == "__main__":
