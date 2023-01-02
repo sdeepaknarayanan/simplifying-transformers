@@ -42,8 +42,6 @@ class BLOCK(BaseModule):
         )
 
     def forward(self, x):
-        
-        return self.output_linear(x)
         return self.attentionblock(x,x,x)
 
     def train_batch(self, data, criterion):
