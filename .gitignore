@@ -130,3 +130,4 @@ dmypy.json
 /datasets/_checkpoints/wikitext2_wikitext2/
 .idea
 /models/_checkpoints/
+/notebooks/torch_dump_model
