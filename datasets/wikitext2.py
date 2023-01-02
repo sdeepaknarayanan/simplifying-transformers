@@ -69,6 +69,7 @@ class WikiText2Dataset(BaseDataset):
         bert_label = t1_label[:self.seq_len]
 
         padding = [self.vocab.pad_index for _ in range(self.seq_len - len(bert_input))]
+        # print(padding)
         bert_input.extend(padding), bert_label.extend(padding), segment_label.extend(padding)
         output = {"bert_input": bert_input,
                   "bert_label": bert_label,
@@ -80,7 +81,7 @@ class WikiText2Dataset(BaseDataset):
 
     def random_word(self, sentence):
         tokens = sentence.split()
-        n = min(self.seq_len, len(tokens))
+        n = min(self.seq_len - 2, len(tokens))
         ix = np.random.choice(np.arange(n))
         output_label = [0] * n
         for i, token in enumerate(tokens):

@@ -73,7 +73,7 @@ class BaseModel(BaseModule):
         self.sample = batch
 
     @torch.no_grad()
-    def evaluate(self, data, criterion=None) -> Tuple[dict, float]:
+    def evaluate(self, data, criterion=None) -> Tuple[dict, Tuple[float, float, float]]:
         from sklearn.metrics import f1_score
         self.eval()
 
@@ -85,6 +85,7 @@ class BaseModel(BaseModule):
         with torch.no_grad():
             data.update({'pred': self.forward(data['bert_input'], data['segment_label'])})
 
+        # print(data['pred'].size(), data['mask_index'].size(), torch.min(data['mask_index']), torch.max(data['mask_index']))
         masked_prediction = data['pred'][torch.arange(data['pred'].size(0)), data['mask_index']]
 
         predicted_label = torch.argmax(masked_prediction, dim=1)
@@ -93,7 +94,9 @@ class BaseModel(BaseModule):
         # precision = torch.sum(predicted_label == gt_label) / data['pred'].size(0)
         f1 = f1_score(gt_label, predicted_label, average='micro')
 
-        return data, f1
+        cross_e = torch.nn.functional.cross_entropy(masked_prediction, gt_label)
+        perplex = torch.sum(torch.exp(cross_e)) / data['pred'].size(0)
+        return data, (f1, (cross_e / data['pred'].size(0)).item(), perplex.item())
 
     def save_model(self, running: bool = True):
         """
