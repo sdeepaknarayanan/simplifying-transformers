@@ -64,6 +64,8 @@ class BLOCK(BaseModule):
 
         # make prediction for the current batch
         prediction = self.forward(x)
+
+        prediction = torch.unsqueeze(prediction, 1)
         loss = criterion(prediction, y)
 
         for param in self.parameters():
