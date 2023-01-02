@@ -115,19 +115,145 @@ class Vocab(TorchVocab):
             pickle.dump(self, f)
 
 
+class TorchVocabUnsorted(object):
+    """Defines a vocabulary object that will be used to numericalize a field.
+    Attributes:
+        freqs: A collections.Counter object holding the frequencies of tokens
+            in the data used to build the Vocab.
+        stoi: A collections.defaultdict instance mapping token strings to
+            numerical identifiers.
+        itos: A list of token strings indexed by their numerical identifiers.
+    """
+
+    def __init__(self, counter, word_list, max_size=None, min_freq=1, specials=["[PAD]", "[UNK]", "[CLS]", "[SEP]", "[MASK]"],
+                 vectors=None, unk_init=None, vectors_cache=None):
+        """Create a Vocab object from a collections.Counter.
+        Arguments:
+            counter: collections.Counter object holding the frequencies of
+                each value found in the data.
+            max_size: The maximum size of the vocabulary, or None for no
+                maximum. Default: None.
+            min_freq: The minimum frequency needed to include a token in the
+                vocabulary. Values less than 1 will be set to 1. Default: 1.
+            specials: The list of special tokens (e.g., padding or eos) that
+                will be prepended to the vocabulary in addition to an <unk>
+                token. Default: ['<pad>']
+            vectors: One of either the available pretrained vectors
+                or custom pretrained vectors (see Vocab.load_vectors);
+                or a list of aforementioned vectors
+            unk_init (callback): by default, initialize out-of-vocabulary word vectors
+                to zero vectors; can be any function that takes in a Tensor and
+                returns a Tensor of the same size. Default: torch.Tensor.zero_
+            vectors_cache: directory for cached vectors. Default: '.vector_cache'
+        """
+        # self.freqs = counter
+        counter = counter.copy()
+        # tokens are indexed with starting index 1, hence add un
+        freqs = []
+        itos = []
+        for word in word_list:
+            itos.append(word)
+            freqs.append(counter[word] if counter[word] else 1.0)
+
+        self.itos = itos
+        self.freqs = freqs
+
+        self.stoi = {tok: i for i, tok in enumerate(self.itos)}
+
+        self.vectors = None
+        if vectors is not None:
+            self.load_vectors(vectors, unk_init=unk_init, cache=vectors_cache)
+        else:
+            assert unk_init is None and vectors_cache is None
+
+    def __eq__(self, other):
+        if self.freqs != other.freqs:
+            return False
+        if self.stoi != other.stoi:
+            return False
+        if self.itos != other.itos:
+            return False
+        if self.vectors != other.vectors:
+            return False
+        return True
+
+    def __len__(self):
+        return len(self.itos)
+
+    def vocab_rerank(self):
+        self.stoi = {word: i for i, word in enumerate(self.itos)}
+
+    def extend(self, v, sort=False):
+        words = sorted(v.itos) if sort else v.itos
+        for w in words:
+            if w not in self.stoi:
+                self.itos.append(w)
+                self.stoi[w] = len(self.itos) - 1
+
+
+class BertVocab(TorchVocabUnsorted):
+    def __init__(self, config):
+        print("Using Bert Vocab")
+        counter = Counter()
+        with open(config.vocab_path) as text_file:
+            for line in tqdm.tqdm(text_file):
+                if isinstance(line, list):
+                    words = line
+                else:
+                    words = line.replace("\n", "").replace("\t", "").split()
+
+                for word in words:
+                    counter[word] += 1
+
+        text_file.close()
+
+        bert_counter = Counter()
+        word_list = []
+        with open(config.bert_google_vocab) as bert_vocab:
+            for word in tqdm.tqdm(bert_vocab):
+                word = word.replace("\n", "").replace("\t", "")
+                bert_counter[word] = counter[word] if word in counter else 1
+                word_list.append(word)
+
+        bert_vocab.close()
+        self.pad_index = 0
+        self.unk_index = 100
+        self.eos_index = 102
+        self.sos_index = 101
+        self.mask_index = 103
+
+        super().__init__(bert_counter, word_list, specials=["[PAD]", "[UNK]", "[CLS]", "[SEP]", "[MASK]"],
+                         max_size=config.vocab_max_size, min_freq=config.vocab_min_frequency)
+
+    def from_seq(self, seq, join=False, with_pad=False):
+        words = [self.itos[idx]
+                 if idx <= len(self.itos)
+                 else "<%d>" % idx
+                 for idx in seq
+                 if not with_pad or idx != self.pad_index]
+
+        return " ".join(words) if join else words
+
+    def from_index(self, index):
+        return self.itos[index-1]
+
+    def from_index(self, index):
+        return self.itos[index]
+
 # Building Vocab with text files
 class WordVocab(Vocab):
     def __init__(self, config):
         print("Building Vocab")
         counter = Counter()
-        for line in tqdm.tqdm(config.vocab_path):
-            if isinstance(line, list):
-                words = line
-            else:
-                words = line.replace("\n", "").replace("\t", "").split()
+        with open(config.vocab_path) as text_file:
+            for line in tqdm.tqdm(text_file):
+                if isinstance(line, list):
+                    words = line
+                else:
+                    words = line.replace("\n", "").replace("\t", "").split()
 
-            for word in words:
-                counter[word] += 1
+                for word in words:
+                    counter[word] += 1
         super().__init__(counter, max_size=config.vocab_max_size, min_freq=config.vocab_min_frequency)
 
     def to_seq(self, sentence, seq_len=None, with_eos=False, with_sos=False, with_len=False):

@@ -1,6 +1,6 @@
 import logging
 
-import torch.backends.cudnn
+import torch
 
 import datasets
 import models
@@ -29,6 +29,8 @@ def main(conf):
     # load the model specified with --model_name
     model = models.get(model_name=conf.model)(config=conf, vocab_size=len(vocab))
     model.initialize_sample(batch=next(iter(test_loader)))
+    print("Before Load")
+    model.load_state()
 
     logging.log(logging.INFO, "Initialized")
     # load loss and evaluation metric

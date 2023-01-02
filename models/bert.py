@@ -7,7 +7,7 @@ from torch.optim import Adam
 from models.base_model import BaseModel
 from models.embedding.bert import BERTEmbedding
 from models.modules.transformer_block import TransformerBlock
-
+from models.modules.sublayer_connection import LayerNorm
 
 class MaskedLanguageModel(nn.Module):
     """
@@ -21,15 +21,20 @@ class MaskedLanguageModel(nn.Module):
         :param vocab_size: total vocab size
         """
         super().__init__()
-        self.linear = nn.Linear(hidden, vocab_size)
+        self.linear = nn.Linear(hidden, hidden)
+        self.act = nn.GELU()
+        self.layer_norm = LayerNorm(hidden)
+        self.decoder = nn.Linear(hidden, vocab_size)
         self.softmax = nn.LogSoftmax(dim=-1)
 
     def forward(self, x):
-        return self.softmax(self.linear(x))
-
+        x = self.linear(x)
+        x = self.act(x)
+        x = self.layer_norm(x)
+        return self.decoder(x)
 
 class BERT(BaseModel):
-    def __init__(self, config, vocab_size: int):
+    def __init__(self, config, vocab_size: int, child: bool = True):
         super(BERT, self).__init__(config)
         """
         :param vocab_size: vocab_size of total words
@@ -60,12 +65,12 @@ class BERT(BaseModel):
             lr=self.conf.lr,
             betas=(self.conf.adam_beta1, self.conf.adam_beta2),
             weight_decay=self.conf.adam_weight_decay
-        )
+        ) if config.train and not child else None
         self.optim_schedule = ScheduledOptim(
             self.optimizer,
             self.hidden,
             n_warmup_steps=self.conf.warmup_steps
-        )
+        ) if config.train and not child else None
 
     def forward(self, x, segment_info):
         # attention masking for padded token
@@ -106,48 +111,28 @@ class BERTLM(BaseModel):
         self.attn_heads = config.heads
         self.device = config.device
 
+        self.bert = BERT(config, vocab_size, True)
+
         self.mask_lm = MaskedLanguageModel(self.hidden, vocab_size).to(self.conf.device)
 
-        # paper noted they used 4*hidden_size for ff_network_hidden_size
-        self.feed_forward_hidden = self.hidden * 4
-
-        # embedding for BERT, sum of positional, segment, token embeddings
-        self.embedding = BERTEmbedding(vocab_size=vocab_size, embed_size=self.hidden).to(self.conf.device)
-
-        # multi-layers transformer blocks, deep network
-        self.transformer_blocks = nn.ModuleList([
-            TransformerBlock(self.hidden, self.attn_heads, self.hidden * 4, config.dropout).to(self.conf.device)
-            for _ in range(config.layers)
-        ])
 
         self.optimizer = Adam(
             self.parameters(),
             lr=self.conf.lr,
             betas=(self.conf.adam_beta1, self.conf.adam_beta2),
             weight_decay=self.conf.adam_weight_decay
-        )
+        ) if config.train else None
         self.optim_schedule = ScheduledOptim(
             self.optimizer,
             self.hidden,
             n_warmup_steps=self.conf.warmup_steps
-        )
+        ) if config.train else None
 
     def forward(self, x, segment_info):
-        # attention masking for padded token
-        # torch.ByteTensor([batch_size, 1, seq_len, seq_len)
 
-        print(x.shape)
-        assert(False)
-        mask = (x > 0).unsqueeze(1).repeat(1, x.size(1), 1).unsqueeze(1)
-
-        # embedding the indexed sequence to sequence of vectors
-        x = self.embedding(x, segment_info)
-
-        # running over multiple transformer blocks
-        for transformer in self.transformer_blocks:
-            x = transformer.forward(x, mask)
-
-        return self.mask_lm(x)
+        x = self.bert(x, segment_info)
+        x = self.mask_lm(x)
+        return x
 
     @staticmethod
     def extend_parser(parser) -> argparse.ArgumentParser:
