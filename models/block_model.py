@@ -16,11 +16,11 @@ from typing import overload, Tuple
 class BLOCK(BaseModule):
     def __init__(self, config):
         super().__init__()
-        self.hidden = config.hidden_features
-        self.attn_heads = config.heads
+        self.hidden = config.block_hidden_features
+        self.attn_heads = config.block_heads
         self.device = config.device
-        self.d_k = config.d_k
-        self.dropout = config.dropout
+        self.d_k = config.block_d_k
+        self.dropout = config.block_dropout
 
         self.conf = config
         self.epoch = 0
@@ -136,11 +136,11 @@ class BLOCK(BaseModule):
 
     @staticmethod
     def extend_parser(parser) -> argparse.ArgumentParser:
-        parser.add_argument('--hidden_features', type=int, default=768, help='# of hidden features')
-        parser.add_argument('--heads', type=int, default=12, help='# of attention heads')
-        parser.add_argument('--d_k', type=int, default=64, help='length of the key/query/value for each head')
-        parser.add_argument('--dropout', type=float, default=0.1, help='dropout probability')
-        parser.add_argument('--model_checkpoint', type=str, default='', help=
+        parser.add_argument('--block_hidden_features', type=int, default=768, help='# of hidden features')
+        parser.add_argument('--block_heads', type=int, default=12, help='# of attention heads')
+        parser.add_argument('--block_d_k', type=int, default=64, help='length of the key/query/value for each head')
+        parser.add_argument('--block_dropout', type=float, default=0.1, help='dropout probability')
+        parser.add_argument('--block_model_checkpoint', type=str, default='', help=
                             'path to a model_state_dict which will be loaded into the model before training/eval')
 
         return parser

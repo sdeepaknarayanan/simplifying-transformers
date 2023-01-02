@@ -53,7 +53,7 @@ class BlockConfig:
 
         parser.add_argument("--log_freq", type=int, default=10, help="printing loss every n iter: setting n")
 
-
+        parser = models.get("BERTLM").extend_parser(parser)
         self.parser = parser
         self.parser = self.gather()
      

@@ -134,7 +134,7 @@ class BaseModel(BaseModule):
         exit()
 
     def load_state(self):
-        path = self.conf.model_checkpoint
+        path = self.conf.block_model_checkpoint
         tmp = path
 
         print(path)
@@ -197,8 +197,8 @@ class BaseModel(BaseModule):
                 self.epoch = 0
 
         else:
-            if self.conf.model_checkpoint != '':
-                logging.warning('Could not find a state dict at the location specified.')
+            if self.conf.block_model_checkpoint != '':
+                logging.warning('Could not find a state dict for block model at the location specified.')
             self.epoch = 0
 
     def save_and_step(self):
