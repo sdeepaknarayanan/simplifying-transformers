@@ -57,10 +57,10 @@ def train_block(conf):
             y = None
 
             with torch.no_grad():
-                x = data['bert_input']
-                segment_info = data['segment_label']
+                x = data['bert_input'].to(config.device)
+                segment_info = data['segment_label'].to(config.device)
                 mask = (x > 0).unsqueeze(1).repeat(1, x.size(1), 1).unsqueeze(1)
-                x  = base_model.bert.embedding(x, segment_info)
+                x = base_model.bert.embedding(x, segment_info)
 
                 for layer, transformer in enumerate(base_model.bert.transformer_blocks):
                     if(layer == config.block):
@@ -84,8 +84,8 @@ def train_block(conf):
             y = None
 
             with torch.no_grad():
-                x = data['bert_input']
-                segment_info = data['segment_label']
+                x = data['bert_input'].to(config.device)
+                segment_info = data['segment_label'].to(config.device)
                 mask = (x > 0).unsqueeze(1).repeat(1, x.size(1), 1).unsqueeze(1)
                 x  = base_model.bert.embedding(x, segment_info)
 

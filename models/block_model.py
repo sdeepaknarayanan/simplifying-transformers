@@ -41,6 +41,8 @@ class BLOCK(BaseModule):
             n_warmup_steps=self.conf.warmup_steps
         )
 
+        self.to(config.device)
+
     def forward(self, x):
         return self.attentionblock(x,x,x)
 

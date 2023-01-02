@@ -195,7 +195,7 @@ class BertVocab(TorchVocabUnsorted):
     def __init__(self, config):
         print("Using Bert Vocab")
         counter = Counter()
-        with open(config.vocab_path) as text_file:
+        with open(config.vocab_path, encoding=config.encoding) as text_file:
             for line in tqdm.tqdm(text_file):
                 if isinstance(line, list):
                     words = line
@@ -209,7 +209,7 @@ class BertVocab(TorchVocabUnsorted):
 
         bert_counter = Counter()
         word_list = []
-        with open(config.bert_google_vocab) as bert_vocab:
+        with open(config.bert_google_vocab, encoding=config.encoding) as bert_vocab:
             for word in tqdm.tqdm(bert_vocab):
                 word = word.replace("\n", "").replace("\t", "")
                 bert_counter[word] = counter[word] if word in counter else 1
