@@ -1,6 +1,7 @@
 import logging
 
 import torch
+import tqdm
 
 import datasets
 import models
@@ -25,24 +26,26 @@ def main(conf):
     model.load_state()
 
     logging.log(logging.INFO, "Initialized")
+    f1_accumulated = 0.
+    with tqdm.tqdm(test_loader, unit="batch") as tq_loader:
+        for index, data in enumerate(tq_loader):
+            tq_loader.set_description(f"Batch: {index}")
+            data, f1 = model.evaluate(data)
+            f1_accumulated = f1_accumulated + f1
+            tq_loader.set_postfix(loss)
+            print(f"Running f1: {f1_accumulated / (index + 1)}")
+            for ind in range(data['pred'].size(0)):
 
-    for index, data in enumerate(test_loader):
-        data, _ = model.evaluate(data)
+                sentence = vocab.from_seq(torch.masked_select(data['bert_input'][ind], data['segment_label'][ind].bool()))
+                # predicted = vocab.from_index(torch.argmax(data['pred'][ind], dim=1)[data['mask_index'][ind]])
+                # gt = vocab.from_index(data['bert_label'][ind][data['mask_index'][ind]])
 
-        for ind in range(data['pred'].size(0)):
+                pred = vocab.itos[data['pred'][ind][data['mask_index'][ind]].argmax().item()]
+                gt = vocab.itos[data['bert_label'][ind][data['mask_index'][ind]]]
+                print("Input: ", sentence)
+                print(f"Prediction: {pred}, GT: {gt}")
 
-            data['pred'][ind, data["mask_index"][ind], 101] = -1e10 # disregard CLS token
-            # data['pred'][ind, data["mask_index"][ind], 103] = -1e10
-            # data['pred'][ind, data["mask_index"][ind], 105] = -1e10
-
-            sentence = vocab.from_seq(torch.masked_select(data['bert_input'][ind], data['segment_label'][ind].bool()))
-            predicted = vocab.from_index(torch.argmax(data['pred'][ind], dim=1)[data['mask_index'][ind]])
-            gt = vocab.from_index(data['bert_label'][ind][data['mask_index'][ind]])
-            print("Input: ", sentence)
-            print(f"Prediction: {predicted}, GT: {gt}")
-
-
-        exit()
+            exit()
 
 
 if __name__ == "__main__":

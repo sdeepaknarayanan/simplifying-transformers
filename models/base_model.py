@@ -74,6 +74,7 @@ class BaseModel(BaseModule):
 
     @torch.no_grad()
     def evaluate(self, data, criterion=None) -> Tuple[dict, float]:
+        from sklearn.metrics import f1_score
         self.eval()
 
         # send data-points to device (GPU)
@@ -81,12 +82,18 @@ class BaseModel(BaseModule):
             data.update({key: value.to(self.conf.device)})
 
         # make prediction for the current batch
-        data.update({'pred': self.forward(data['bert_input'], data['segment_label'])})
-        # compute loss if one is provided. make sure the losses output their values to some log, as no loss value is
-        # returned here
-        loss = criterion(data['pred'].transpose(1, 2), data['bert_label']).item() if criterion is not None else None
+        with torch.no_grad():
+            data.update({'pred': self.forward(data['bert_input'], data['segment_label'])})
 
-        return data, loss
+        masked_prediction = data['pred'][torch.arange(data['pred'].size(0)), data['mask_index']]
+
+        predicted_label = torch.argmax(masked_prediction, dim=1)
+        gt_label = data['bert_label'][torch.arange(data['pred'].size(0)), data['mask_index']]
+
+        # precision = torch.sum(predicted_label == gt_label) / data['pred'].size(0)
+        f1 = f1_score(gt_label, predicted_label, average='micro')
+
+        return data, f1
 
     def save_model(self, running: bool = True):
         """
@@ -114,7 +121,6 @@ class BaseModel(BaseModule):
         Predict the sample batch with the current model weights and store the result in the out folder
         :return:
         """
-
         # TODO: implement
         # load and predict the sample batch
         data, _ = self.evaluate(data)
