@@ -5,7 +5,7 @@ import torch.backends.cudnn
 import datasets
 import models
 from config.train_config import TrainConfig
-# torch.backends.cudnn.benchmark = True
+torch.backends.cudnn.benchmark = True
 
 from config.train_config import BlockTrainConfig
 
@@ -73,10 +73,12 @@ def train_block(conf):
             print('Epoch {e:>2}, Batch [{b:>5}/{t:<5}]. Current loss: {l:.5f}'.format(
                 e=epoch, b=index+1, t=len(train_loader), l=loss))
 
+        del x, y, mask, segment_info, loss
         # Save model checkpoint & write the accumulated losses to logs and reset the accumulation
         # criterion.complete_epoch(epoch=epoch, mode='train')
         block_model.save_and_step()
 
+        torch.cuda.empty_cache()
         # Evaluate on test-set.
         for index, data in enumerate(test_loader):
             
@@ -96,53 +98,57 @@ def train_block(conf):
 
                 y = transformer.attention.forward(x, x, x, mask=mask)
 
-            block_model.evaluate((x, y), criterion)
-            print('Epoch {e:>2}, Batch [{b:>5}/{t:<5}] eval'.format(e=epoch, b=index + 1, t=len(test_loader)))
+            x, loss = block_model.evaluate((x, y), criterion)
+            print('Epoch {e:>2}, Batch [{b:>5}/{t:<5}] eval Current loss: {l:.5f}'.format(e=epoch, b=index + 1, t=len(test_loader), l=loss))
 
+        del x, y, mask, segment_info, loss
+        torch.cuda.empty_cache()
         # Write the accumulated losses to logs and reset and reset the accumulation
         # criterion.complete_epoch(epoch=epoch, mode='test')
 
         # Save sample images containing prediction and label side by side
         if conf.print_samples:
 
-            for index, data in enumerate(test_loader):
-                x = data['bert_input'].to(config.device)
-                segment_info = data['segment_label'].to(config.device)
-                mask = (x > 0).unsqueeze(1).repeat(1, x.size(1), 1).unsqueeze(1)
-                x = base_model.bert.embedding(x, segment_info)
+            data = next(iter(test_loader))
 
-                for layer, transformer in enumerate(base_model.bert.transformer_blocks):
-                    if (layer == config.block):
-                        break
-                    x = transformer.forward(x, mask)
+            x = data['bert_input'].to(config.device)
+            segment_info = data['segment_label'].to(config.device)
+            mask = (x > 0).unsqueeze(1).repeat(1, x.size(1), 1).unsqueeze(1)
+            x = base_model.bert.embedding(x, segment_info)
 
-                y = transformer.input_sublayer(x, lambda _x: block_model.forward(_x))
-                y = transformer.output_sublayer(y, transformer.feed_forward)
-                y = transformer.dropout(y)
+            for layer, transformer in enumerate(base_model.bert.transformer_blocks):
+                if (layer == config.block):
+                    break
+                x = transformer.forward(x, mask)
+
+            y = transformer.input_sublayer(x, lambda _x: block_model.forward(_x))
+            y = transformer.output_sublayer(y, transformer.feed_forward)
+            y = transformer.dropout(y)
 
 
-                for layer, transformer in enumerate(base_model.bert.transformer_blocks):
-                    if (layer <= config.block):
-                        pass
-                    y = transformer.forward(y, mask)
+            for layer, transformer in enumerate(base_model.bert.transformer_blocks):
+                if (layer <= config.block):
+                    pass
+                y = transformer.forward(y, mask)
 
-                y = base_model.mask_lm(y)
+            y = base_model.mask_lm(y)
 
-                teacher_pred = base_model(data['bert_input'].to(config.device),  data['segment_label'].to(config.device))
+            teacher_pred = base_model(data['bert_input'].to(config.device),  data['segment_label'].to(config.device))
 
-                masked_prediction = y[torch.arange(data['bert_input'].size(0)), data['mask_index'].long()]
-                predicted_label = torch.argmax(masked_prediction, dim=1)
+            masked_prediction = y[torch.arange(data['bert_input'].size(0)), data['mask_index'].long()]
+            predicted_label = torch.argmax(masked_prediction, dim=1)
 
-                masked_teacher_pred = teacher_pred[torch.arange(data['bert_input'].size(0)), data['mask_index'].long()]
-                masked_teacher_pred = torch.argmax(masked_teacher_pred, dim=1)
+            masked_teacher_pred = teacher_pred[torch.arange(data['bert_input'].size(0)), data['mask_index'].long()]
+            masked_teacher_pred = torch.argmax(masked_teacher_pred, dim=1)
 
-                gt_label = data['bert_label'][torch.arange(data['bert_input'].size(0)), data['mask_index'].long()]
-                for i in range(data['bert_input'].size(0)):
-                    print(f"GT: {vocab.itos[gt_label[i]]},\t\t\t TEACHER: {vocab.itos[masked_teacher_pred[i]]}"
-                          f",\t\t\t  PRED: {vocab.itos[predicted_label[i]]}\t\t\t",
-                          vocab.from_seq(data['bert_input'][i], join=True))
+            gt_label = data['bert_label'][torch.arange(data['bert_input'].size(0)), data['mask_index'].long()]
+            for i in range(data['bert_input'].size(0)):
+                print(f"GT: {vocab.itos[gt_label[i]]},\t\t\t TEACHER: {vocab.itos[masked_teacher_pred[i]]}"
+                      f",\t\t\t  PRED: {vocab.itos[predicted_label[i]]}\t\t\t",
+                      vocab.from_seq(data['bert_input'][i], join=True))
+            del gt_label, masked_teacher_pred, predicted_label, masked_prediction, teacher_pred, y, x, segment_info, mask
 
-                break
+        torch.cuda.empty_cache()
         epoch += 1
 
 

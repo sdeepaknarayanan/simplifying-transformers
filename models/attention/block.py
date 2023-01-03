@@ -17,8 +17,6 @@ class BlockMultiHeadedAttention(BaseModule):
         self.d_k = d_k
         self.h = h
         self.d_reducedmodel = int(h * self.d_k)
-        if out_linear_overwrite:
-            print(self.d_k, self.d_reducedmodel, self.h)
         self.linear_layers = nn.ModuleList([nn.Linear(d_model, self.d_reducedmodel) for _ in range(3)])
         self.output_linear = nn.Linear(
             self.d_reducedmodel, d_model
