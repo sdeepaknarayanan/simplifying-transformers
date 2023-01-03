@@ -37,8 +37,6 @@ def main(conf):
             ce_accumulated = ce_accumulated + ce
             p_accumulated = p_accumulated + p
             masked_prediction = data['pred'][torch.arange(data['pred'].size(0)), data['mask_index']]
-            predicted_label = torch.argmax(masked_prediction, dim=1)
-            gt_label = data['bert_label'][torch.arange(data['pred'].size(0)), data['mask_index']]
             tq_loader.set_postfix(f1=f1_accumulated / (index + 1),
                                   ce=ce_accumulated / (index + 1),
                                   perplexity=p_accumulated / (index + 1))
