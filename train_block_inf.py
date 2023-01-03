@@ -5,11 +5,13 @@ import torch.backends.cudnn
 import datasets
 import models
 from config.train_config import TrainConfig
+
 torch.backends.cudnn.benchmark = True
 
 from config.train_config import BlockTrainConfig
 
 from parent_bert import get_pretrained_berd
+
 
 def train_block(conf):
     """ 
@@ -64,15 +66,15 @@ def train_block(conf):
                 x = base_model.bert.embedding(x, segment_info)
 
                 for layer, transformer in enumerate(base_model.bert.transformer_blocks):
-                    if(layer == config.block):
+                    if (layer == config.block):
                         break
                     x = transformer.forward(x, mask)
-            
-                y = transformer.attention.forward(x,x,x, mask = mask) 
 
-            loss = block_model.train_batch((x,y), criterion)
+                y = transformer.attention.forward(x, x, x, mask=mask)
+
+            loss = block_model.train_batch((x, y), criterion)
             print('Epoch {e:>2}, Batch [{b:>5}/{t:<5}]. Current loss: {l:.5f}'.format(
-                e=epoch, b=index+1, t=len(train_loader), l=loss))
+                e=epoch, b=index + 1, t=len(train_loader), l=loss))
 
         del x, y, mask, segment_info, loss
         # Save model checkpoint & write the accumulated losses to logs and reset the accumulation
@@ -82,7 +84,7 @@ def train_block(conf):
         torch.cuda.empty_cache()
         # Evaluate on test-set.
         for index, data in enumerate(test_loader):
-            
+
             x = None
             y = None
 
@@ -100,7 +102,8 @@ def train_block(conf):
                 y = transformer.attention.forward(x, x, x, mask=mask)
 
             x, loss = block_model.evaluate((x, y), criterion)
-            print('Epoch {e:>2}, Batch [{b:>5}/{t:<5}] eval Current loss: {l:.5f}'.format(e=epoch, b=index + 1, t=len(test_loader), l=loss))
+            print('Epoch {e:>2}, Batch [{b:>5}/{t:<5}] eval Current loss: {l:.5f}'.format(e=epoch, b=index + 1,
+                                                                                          t=len(test_loader), l=loss))
 
         del x, y, mask, segment_info, loss
         torch.cuda.empty_cache()
@@ -112,13 +115,13 @@ def train_block(conf):
 
             data = next(iter(test_loader))
 
-            x = data['bert_input'].to(config.device)
-            segment_info = data['segment_label'].to(config.device)
+            x = data['bert_input'].to(conf.device)
+            segment_info = data['segment_label'].to(conf.device)
             mask = (x > 0).unsqueeze(1).repeat(1, x.size(1), 1).unsqueeze(1)
             x = base_model.bert.embedding(x, segment_info)
 
             for layer, transformer in enumerate(base_model.bert.transformer_blocks):
-                if (layer == config.block):
+                if (layer == conf.block):
                     break
                 x = transformer.forward(x, mask)
 
@@ -127,13 +130,13 @@ def train_block(conf):
             y = transformer.dropout(y)
 
             for layer, transformer in enumerate(base_model.bert.transformer_blocks):
-                if (layer <= config.block):
+                if (layer <= conf.block):
                     pass
                 y = transformer.forward(y, mask)
 
             y = base_model.mask_lm(y)
 
-            teacher_pred = base_model(data['bert_input'].to(config.device),  data['segment_label'].to(config.device))
+            teacher_pred = base_model(data['bert_input'].to(conf.device), data['segment_label'].to(config.device))
 
             masked_prediction = y[torch.arange(data['bert_input'].size(0)), data['mask_index'].long()]
             predicted_label = torch.argmax(masked_prediction, dim=1)
@@ -152,9 +155,7 @@ def train_block(conf):
         epoch += 1
 
 
-
 if __name__ == "__main__":
-
     # gather necessary config data from different parsers and combine.
     option = BlockTrainConfig()
     option.print()
