@@ -42,9 +42,10 @@ class BaseConfig:
         parser.add_argument('--device', type=str, default='cuda' if torch.cuda.is_available() else 'cpu', help=
                             'Execution device, cuda is default if device has a cuda ready GPU', choices=['cpu', 'cuda'])
 
-        parser.add_argument('--print_samples', dest='print_samples', action='store_true')
         parser.add_argument('--print_no_samples', dest='print_samples', action='store_false')
-        parser.set_defaults(dataset_depth_from_norm=True)
+        parser.add_argument('--print_samples', dest='print_samples', action='store_true')
+
+        parser.set_defaults(print_samples=True)
 
         parser.add_argument("-o", "--output_path",
                             default="output/", type=str,

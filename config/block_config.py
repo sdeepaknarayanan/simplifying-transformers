@@ -43,7 +43,7 @@ class BlockConfig:
 
         parser.add_argument('--print_samples', dest='print_samples', action='store_true')
         parser.add_argument('--print_no_samples', dest='print_samples', action='store_false')
-        parser.set_defaults(dataset_depth_from_norm=True)
+        parser.set_defaults(print_samples=True)
 
         parser.add_argument("-o", "--output_path",
                             default="output/", type=str,

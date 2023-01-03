@@ -87,24 +87,55 @@ def train_block(conf):
                 x = data['bert_input'].to(config.device)
                 segment_info = data['segment_label'].to(config.device)
                 mask = (x > 0).unsqueeze(1).repeat(1, x.size(1), 1).unsqueeze(1)
-                x  = base_model.bert.embedding(x, segment_info)
+                x = base_model.bert.embedding(x, segment_info)
 
                 for layer, transformer in enumerate(base_model.bert.transformer_blocks):
-                    if(layer == config.block):
+                    if (layer == config.block):
                         break
                     x = transformer.forward(x, mask)
-            
-                y = transformer.attention.forward(x,x,x, mask = mask) 
 
-            block_model.evaluate((x,y), criterion)
-            print('Epoch {e:>2}, Batch [{b:>5}/{t:<5}] eval'.format(e=epoch, b=index+1, t=len(test_loader)))
+                y = transformer.attention.forward(x, x, x, mask=mask)
+
+            block_model.evaluate((x, y), criterion)
+            print('Epoch {e:>2}, Batch [{b:>5}/{t:<5}] eval'.format(e=epoch, b=index + 1, t=len(test_loader)))
 
         # Write the accumulated losses to logs and reset and reset the accumulation
         # criterion.complete_epoch(epoch=epoch, mode='test')
 
         # Save sample images containing prediction and label side by side
         if conf.print_samples:
-            block_model.print_sample()
+
+            for index, data in enumerate(test_loader):
+                x = data['bert_input'].to(config.device)
+                segment_info = data['segment_label'].to(config.device)
+                mask = (x > 0).unsqueeze(1).repeat(1, x.size(1), 1).unsqueeze(1)
+                x = base_model.bert.embedding(x, segment_info)
+
+                for layer, transformer in enumerate(base_model.bert.transformer_blocks):
+                    if (layer == config.block):
+                        break
+                    x = transformer.forward(x, mask)
+
+                y = transformer.input_sublayer(x, lambda _x: block_model.forward(_x))
+                y = transformer.output_sublayer(y, transformer.feed_forward)
+                y = transformer.dropout(y)
+
+                for layer, transformer in enumerate(base_model.bert.transformer_blocks):
+                    if (layer <= config.block):
+                        pass
+                    y = transformer.forward(y, mask)
+
+                y = base_model.mask_lm(y)
+
+                masked_prediction = y[torch.arange(data['bert_input'].size(0)), data['mask_index'].long()]
+                predicted_label = torch.argmax(masked_prediction, dim=1)
+
+                gt_label = data['bert_label'][torch.arange(data['bert_input'].size(0)), data['mask_index'].long()]
+                for i in range(data['bert_input'].size(0)):
+                    print(f"GT: {vocab.itos[gt_label[i]]},\t\t\t  PRED: {vocab.itos[predicted_label[i]]}\t\t\t",
+                          vocab.from_seq(data['bert_input'][i], join=True))
+
+                break
         epoch += 1
 
 

@@ -56,22 +56,18 @@ class BLOCK(BaseModule):
         self.train()
 
         x,y = data
-        
+
         # send data-points to device (GPU)
         x = x.to(self.device)
         y = y.to(self.device)
 
-        x = torch.unsqueeze(x, 1)
-        y = torch.unsqueeze(y, 1)
+        for param in self.parameters():
+            param.grad = None
 
         # make prediction for the current batch
         prediction = self.forward(x)
 
-        prediction = torch.unsqueeze(prediction, 1)
         loss = criterion(prediction, y)
-
-        for param in self.parameters():
-            param.grad = None
 
         loss.backward()
         self.optimizer.step()
@@ -87,7 +83,9 @@ class BLOCK(BaseModule):
 
         self.eval()
 
+
         x,y = data
+
 
          # send data-points to device (GPU)
         x = x.to(self.device)
