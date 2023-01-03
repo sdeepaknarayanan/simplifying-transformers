@@ -92,10 +92,11 @@ class BaseModel(BaseModule):
         gt_label = data['bert_label'][torch.arange(data['pred'].size(0)), data['mask_index']]
 
         # precision = torch.sum(predicted_label == gt_label) / data['pred'].size(0)
-        f1 = f1_score(gt_label, predicted_label, average='micro')
-
         cross_e = torch.nn.functional.cross_entropy(masked_prediction, gt_label)
         perplex = torch.sum(torch.exp(cross_e)) / data['pred'].size(0)
+
+        f1 = f1_score(gt_label.cpu(), predicted_label.cpu(), average='micro')
+
         return data, (f1, (cross_e / data['pred'].size(0)).item(), perplex.item())
 
     def save_model(self, running: bool = True):

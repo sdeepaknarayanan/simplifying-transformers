@@ -38,6 +38,7 @@ def train_block(conf):
     #     print(name, parameter.size())
     # exit()
     base_model.load_state(load_optimizer=False)
+    base_model.eval()
     # base_model = get_pretrained_berd()
 
     logging.log(logging.INFO, "Initialized")
@@ -124,7 +125,6 @@ def train_block(conf):
             y = transformer.input_sublayer(x, lambda _x: block_model.forward(_x))
             y = transformer.output_sublayer(y, transformer.feed_forward)
             y = transformer.dropout(y)
-
 
             for layer, transformer in enumerate(base_model.bert.transformer_blocks):
                 if (layer <= config.block):
