@@ -140,6 +140,6 @@ class WikiText2Dataset(BaseDataset):
         parser.add_argument("--corpus_lines", type=int, default=None, help="total number of lines in corpus")
         parser.add_argument("--on_memory", type=bool, default=True, help="Loading on memory: true or false")
         parser.add_argument("--encoding", type=str, default='utf-8', help="text data encoding")
-        parser.add_argument("-w", "--num_workers", type=int, default=5, help="dataloader worker size")
+        parser.add_argument("-w", "--num_workers", type=int, default=4, help="dataloader worker size")
 
         return parser
