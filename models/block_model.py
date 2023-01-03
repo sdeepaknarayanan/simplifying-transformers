@@ -109,8 +109,7 @@ class BLOCK(BaseModule):
             if false, the state_dict ist store with an epoch number and will not be overwritten during this training.
         :return:
         """
-        file_dir = self.conf.storage_directory + '/models/_checkpoints/' + self.conf.dataset + '_' +\
-                   self.conf.dataset + '/'
+        file_dir = self.conf.storage_directory + '/models/_checkpoints/' + self.conf.dataset + '/'
 
         if not os.path.exists(file_dir):
             os.makedirs(file_dir)
@@ -129,7 +128,7 @@ class BLOCK(BaseModule):
         Save checkpoints and decrease learn rate, should be called at the end of every training epoch
         """
         # save the most recent model to enable continuation if necessary
-        file_dir = self.conf.storage_directory + '/models/_checkpoints/' + self.conf.dataset + '/block_' + str(self.conf.layers) + '/'
+        file_dir = self.conf.storage_directory + '/models/_checkpoints/' + self.conf.dataset + '/block_' + str(self.conf.block) + '/'
 
         if not os.path.exists(file_dir):
             os.makedirs(file_dir)
