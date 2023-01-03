@@ -28,7 +28,6 @@ def train_block(conf):
     train_loader = train_dataset.get_data_loader()
     test_loader = test_dataset.get_data_loader()
 
-
     # load the blockmodel specified with --model_name
     block_model = models.get(model_name=conf.model)(config=conf)
 
@@ -52,7 +51,6 @@ def train_block(conf):
 
         # Train on training-set
         for index, data in enumerate(train_loader):
-
             x = None
             y = None
 
