@@ -3,13 +3,12 @@ from models.block_model import BLOCK
 
 
 def get(model_name: str):
-    match model_name:
-        case 'BERT':
-            return BERT
-        case 'BERTLM':
-            return BERTLM
-        case 'BLOCK':
-            return BLOCK
-        case _:
-            raise NotImplementedError
+    if model_name == 'BERT':
+        return BERT
+    if model_name == 'BERTLM':
+        return  BERTLM
+    if model_name == 'BLOCK':
+        return BLOCK
+    else:
+        raise NotImplementedError
 

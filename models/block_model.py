@@ -17,6 +17,7 @@ class BLOCK(BaseModule):
     def __init__(self, config):
         super().__init__()
         self.hidden = config.block_hidden_features
+        self.out_hidden = config.block_out_hidden_features
         self.attn_heads = config.block_heads
         self.device = config.device
         self.d_k = config.block_d_k
@@ -25,8 +26,10 @@ class BLOCK(BaseModule):
         self.conf = config
         self.epoch = 0
 
-        self.attentionblock = BlockMultiHeadedAttention(self.attn_heads, self.hidden, d_k =self.d_k, dropout = self.dropout)
-        self.output_linear = nn.Linear(self.hidden, self.hidden)
+        self.attentionblock = BlockMultiHeadedAttention(
+            self.attn_heads, self.hidden, d_k=self.d_k, dropout=self.dropout, out_linear_overwrite=self.out_hidden
+        )
+        # self.output_linear = nn.Linear(self.hidden, self.hidden)
 
         self.optimizer = Adam(
             self.parameters(),
@@ -126,17 +129,32 @@ class BLOCK(BaseModule):
         Save checkpoints and decrease learn rate, should be called at the end of every training epoch
         """
         # save the most recent model to enable continuation if necessary
-        self.save_model()
+        file_dir = self.conf.storage_directory + '/models/_checkpoints/' + self.conf.dataset + '/block_' + str(self.conf.layers) + '/'
 
-        # save checkpoint
+        if not os.path.exists(file_dir):
+            os.makedirs(file_dir)
+
+        file_name = self.conf.model + '-' + 'latest.pth'
+        torch.save({
+            'model_state_dict': self.state_dict(),
+            'optimizer_state_dict': self.optimizer.state_dict(),
+            'epoch': self.epoch,
+        }, file_dir + file_name)
+
         if self.epoch % self.conf.save_checkpoint_every == 0:
-            self.save_model(running=False)
+            file_name = self.conf.model + '-' + str(self.epoch) + '.pth'
+            torch.save({
+                'model_state_dict': self.state_dict(),
+                'optimizer_state_dict': self.optimizer.state_dict(),
+                'epoch': self.epoch,
+            }, file_dir + file_name)
 
         self.epoch += 1
 
     @staticmethod
     def extend_parser(parser) -> argparse.ArgumentParser:
         parser.add_argument('--block_hidden_features', type=int, default=768, help='# of hidden features')
+        parser.add_argument('--block_out_hidden_features', type=int, default=768, help='# of hidden features')
         parser.add_argument('--block_heads', type=int, default=12, help='# of attention heads')
         parser.add_argument('--block_d_k', type=int, default=64, help='length of the key/query/value for each head')
         parser.add_argument('--block_dropout', type=float, default=0.1, help='dropout probability')

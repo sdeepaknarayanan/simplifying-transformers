@@ -15,13 +15,27 @@ module load cudnn/7.6.4
 echo installing pytorch
 pip3 install torch==1.10.0+cu113 torchvision==0.11.1+cu113 torchaudio===0.10.0+cu113 -f https://download.pytorch.org/whl/cu113/torch_stable.html
 
+echo installing transformers
+pip install transformers
+
 #echo installing lpips
 #pip install lpips
 
 echo loading eth_proxy
 module load eth_proxy
 
-bsub -n 4 -W 4:00 -N -J "JOBNAME1" -R "rusage[mem=8192, ngpus_excl_p=1]" -R "select[gpu_mtotal0>=11000]" -o 'JOBNAME1_OUTPUT.txt' python train.py -ARGS
-bsub -n 4 -W 4:00 -N -J "JOBNAME2" -R "rusage[mem=8192, ngpus_excl_p=1]" -R "select[gpu_mtotal0>=11000]" -o 'JOBNAME2_OUTPUT.txt' python train.py -ARGS
-bsub -n 4 -W 4:00 -N -J "JOBNAME3" -R "rusage[mem=8192, ngpus_excl_p=1]" -R "select[gpu_mtotal0>=11000]" -o 'JOBNAME3_OUTPUT.txt' python train.py -ARGS
-bsub -n 4 -W 4:00 -N -J "JOBNAME4" -R "rusage[mem=8192, ngpus_excl_p=1]" -R "select[gpu_mtotal0>=11000]" -o 'JOBNAME4_OUTPUT.txt' python train.py -ARGS
+bsub -n 4 -W 4:00 -N -J "JOBNAME1" -R "rusage[mem=8192, ngpus_excl_p=1]" -R "select[gpu_mtotal0>=11000]" -o 'JOBNAME1_OUTPUT.txt' python train_block_inf.py --layers 1 --block_d_k 64
+#bsub -n 4 -W 4:00 -N -J "JOBNAME2" -R "rusage[mem=8192, ngpus_excl_p=1]" -R "select[gpu_mtotal0>=11000]" -o 'JOBNAME2_OUTPUT.txt' python train_block_inf.py --layers 1 --block_d_k 32
+#bsub -n 4 -W 4:00 -N -J "JOBNAME3" -R "rusage[mem=8192, ngpus_excl_p=1]" -R "select[gpu_mtotal0>=11000]" -o 'JOBNAME3_OUTPUT.txt' python train_block_inf.py --layers 1 --block_d_k 16
+#
+#bsub -n 4 -W 4:00 -N -J "JOBNAME4" -R "rusage[mem=8192, ngpus_excl_p=1]" -R "select[gpu_mtotal0>=11000]" -o 'JOBNAME4_OUTPUT.txt' python train_block_inf.py --layers 2 --block_d_k 64
+#bsub -n 4 -W 4:00 -N -J "JOBNAME5" -R "rusage[mem=8192, ngpus_excl_p=1]" -R "select[gpu_mtotal0>=11000]" -o 'JOBNAME5_OUTPUT.txt' python train_block_inf.py --layers 2 --block_d_k 32
+#bsub -n 4 -W 4:00 -N -J "JOBNAME6" -R "rusage[mem=8192, ngpus_excl_p=1]" -R "select[gpu_mtotal0>=11000]" -o 'JOBNAME6_OUTPUT.txt' python train_block_inf.py --layers 2 --block_d_k 16
+#
+#bsub -n 4 -W 4:00 -N -J "JOBNAME7" -R "rusage[mem=8192, ngpus_excl_p=1]" -R "select[gpu_mtotal0>=11000]" -o 'JOBNAME7_OUTPUT.txt' python train_block_inf.py --layers 10 --block_d_k 64
+#bsub -n 4 -W 4:00 -N -J "JOBNAME8" -R "rusage[mem=8192, ngpus_excl_p=1]" -R "select[gpu_mtotal0>=11000]" -o 'JOBNAME8_OUTPUT.txt' python train_block_inf.py --layers 10 --block_d_k 32
+#bsub -n 4 -W 4:00 -N -J "JOBNAME9" -R "rusage[mem=8192, ngpus_excl_p=1]" -R "select[gpu_mtotal0>=11000]" -o 'JOBNAME9_OUTPUT.txt' python train_block_inf.py --layers 10 --block_d_k 16
+#
+#bsub -n 4 -W 4:00 -N -J "JOBNAME10" -R "rusage[mem=8192, ngpus_excl_p=1]" -R "select[gpu_mtotal0>=11000]" -o 'JOBNAME10_OUTPUT.txt' python train_block_inf.py --layers 11 --block_d_k 64
+#bsub -n 4 -W 4:00 -N -J "JOBNAME11" -R "rusage[mem=8192, ngpus_excl_p=1]" -R "select[gpu_mtotal0>=11000]" -o 'JOBNAME11_OUTPUT.txt' python train_block_inf.py --layers 11 --block_d_k 32
+#bsub -n 4 -W 4:00 -N -J "JOBNAME12" -R "rusage[mem=8192, ngpus_excl_p=1]" -R "select[gpu_mtotal0>=11000]" -o 'JOBNAME12_OUTPUT.txt' python train_block_inf.py --layers 11 --block_d_k 16

@@ -18,13 +18,12 @@ class BlockDataset(BaseDataset):
 
     self.config = config
 
-    match split:
-      case "train":
-        self.data_path = config.train_dataset
-      case "test":  
-        self.data_path = config.test_dataset
-      case "val":
-        self.data_path = config.val_dataset    
+    if split == 'train':
+      self.corpus_path = config.train_dataset
+    if split == 'test':
+      self.corpus_path = config.test_dataset
+    if split == 'val':
+      self.corpus_path = config.val_dataset
         
     self.data =np.load(self.data_path).astype(np.single)
     

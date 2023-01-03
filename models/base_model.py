@@ -133,7 +133,7 @@ class BaseModel(BaseModule):
         print(data['segment_label'][0])
         exit()
 
-    def load_state(self):
+    def load_state(self, load_optimizer: bool = True):
         path = self.conf.model_checkpoint
         tmp = path
 
@@ -146,7 +146,7 @@ class BaseModel(BaseModule):
                 print("Loaded checkpoint")
                 try:
                     state_dict = checkpoint['model_state_dict']
-                    if self.conf.train:
+                    if self.conf.train and load_optimizer:
                         opt_state_dict = checkpoint['optimizer_state_dict']
 
                         new_opt_state_dict = OrderedDict()

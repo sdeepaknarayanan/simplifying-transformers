@@ -4,18 +4,17 @@ from datasets.BlockDataset import BlockDataset
 
 
 def get(dataset_name: str):
-    match dataset_name:
-        case 'wikitext2':
-            return WikiText2Dataset
-        case 'block_training':
+    if dataset_name == 'wikitext2':
+        return WikiText2Dataset
+    if dataset_name == 'block_training':
             return BlockDataset
-        case _:
-            raise NotImplementedError
+    else:
+        return NotImplementedError
 
 
 def get_vocab(config):
-    match config.vocab:
-        case 'codertimo':
-            return WordVocab(config).load_vocab(config.vocab_path)
-        case 'bert-google':
-            return BertVocab(config)
+    if config.vocab == 'codertimo':
+        return WordVocab(config).load_vocab(config.vocab_path)
+    if config.vocab == 'bert-google':
+        return BertVocab(config)
+

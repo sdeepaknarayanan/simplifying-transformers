@@ -24,13 +24,13 @@ class WikiText2Dataset(BaseDataset):
         self.on_memory = config.on_memory
         self.corpus_lines = config.corpus_lines
 
-        match split:
-            case "train":
-                self.corpus_path = config.train_dataset
-            case "test":
-                self.corpus_path = config.test_dataset
-            case "val":
-                self.corpus_path = config.val_dataset
+        if split == 'train':
+            self.corpus_path = config.train_dataset
+        if split == 'test':
+            self.corpus_path = config.test_dataset
+        if split == 'val':
+            self.corpus_path = config.val_dataset
+
         self.encoding = config.encoding
 
         # self.tokenizer = BertTokenizerFast(vocab_file=config.vocab_path)

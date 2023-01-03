@@ -34,8 +34,10 @@ def train_block(conf):
     block_model.initialize_sample(batch=next(iter(test_loader)))
 
     base_model = models.get(model_name="BERTLM")(config=conf, vocab_size=len(vocab))
+    base_model.eval()
+    exit()
 
-    base_model.load_state()
+    base_model.load_state(load_optimizer=False)
     # base_model = get_pretrained_berd()
 
     logging.log(logging.INFO, "Initialized")
