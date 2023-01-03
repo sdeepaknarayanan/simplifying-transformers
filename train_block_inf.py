@@ -39,9 +39,9 @@ def train_block(conf):
     # for name, parameter in base_model.named_parameters():
     #     print(name, parameter.size())
     # exit()
-    base_model.load_state(load_optimizer=False)
+    block_model.load_state(load_optimizer=False)
+    base_model = get_pretrained_berd()
     base_model.eval()
-    # base_model = get_pretrained_berd()
 
     logging.log(logging.INFO, "Initialized")
 
