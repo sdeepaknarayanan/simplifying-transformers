@@ -128,7 +128,8 @@ class BLOCK(BaseModule):
         Save checkpoints and decrease learn rate, should be called at the end of every training epoch
         """
         # save the most recent model to enable continuation if necessary
-        file_dir = self.conf.storage_directory + '/models/_checkpoints/' + self.conf.dataset + '/block_' + str(self.conf.block) + '/'
+        file_dir = self.conf.storage_directory + '/models/_checkpoints/' + self.conf.dataset + '/block_'\
+                   + str(self.conf.block) + '_' + str(self.conf.block_d_k) + '_' + str(self.conf.block_heads) + '/'
 
         if not os.path.exists(file_dir):
             os.makedirs(file_dir)
