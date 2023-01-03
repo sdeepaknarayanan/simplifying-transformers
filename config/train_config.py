@@ -42,7 +42,8 @@ class BlockTrainConfig(BlockConfig):
 
         parser.add_argument('--train', dest='train', action='store_true')
         parser.set_defaults(train=True)
-
+        parser.add_argument('--model_checkpoint', type=str, default="models/_checkpoints/wikitext2/BERTLM-latest.pth",
+                            help="this checkpoint is loaded to the teacher before training")
         parser.add_argument('--epochs', type=int, default=500, help='Number of epochs to train for.')
 
         parser.add_argument("--lr", type=float, default=1e-5, help="learning rate of adam")

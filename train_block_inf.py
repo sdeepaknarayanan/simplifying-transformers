@@ -120,6 +120,7 @@ def train_block(conf):
                 y = transformer.output_sublayer(y, transformer.feed_forward)
                 y = transformer.dropout(y)
 
+
                 for layer, transformer in enumerate(base_model.bert.transformer_blocks):
                     if (layer <= config.block):
                         pass
@@ -127,12 +128,18 @@ def train_block(conf):
 
                 y = base_model.mask_lm(y)
 
+                teacher_pred = base_model(data['bert_input'].to(config.device),  data['segment_label'].to(config.device))
+
                 masked_prediction = y[torch.arange(data['bert_input'].size(0)), data['mask_index'].long()]
                 predicted_label = torch.argmax(masked_prediction, dim=1)
 
+                masked_teacher_pred = teacher_pred[torch.arange(data['bert_input'].size(0)), data['mask_index'].long()]
+                masked_teacher_pred = torch.argmax(masked_teacher_pred, dim=1)
+
                 gt_label = data['bert_label'][torch.arange(data['bert_input'].size(0)), data['mask_index'].long()]
                 for i in range(data['bert_input'].size(0)):
-                    print(f"GT: {vocab.itos[gt_label[i]]},\t\t\t  PRED: {vocab.itos[predicted_label[i]]}\t\t\t",
+                    print(f"GT: {vocab.itos[gt_label[i]]},\t\t\t TEACHER: {vocab.itos[masked_teacher_pred[i]]}"
+                          f",\t\t\t  PRED: {vocab.itos[predicted_label[i]]}\t\t\t",
                           vocab.from_seq(data['bert_input'][i], join=True))
 
                 break

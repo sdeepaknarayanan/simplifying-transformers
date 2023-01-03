@@ -134,7 +134,7 @@ class BaseModel(BaseModule):
         exit()
 
     def load_state(self):
-        path = self.conf.block_model_checkpoint
+        path = self.conf.model_checkpoint
         tmp = path
 
         print(path)
