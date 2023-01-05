@@ -1,0 +1,73 @@
+#!/bin/bash
+
+echo loading gcc
+module load gcc/6.3.0
+
+echo loading python
+module load python/3.8.5
+
+echo loading cuda
+module load cuda/11.1.1
+
+echo loading cudnn
+module load cudnn/7.6.4
+
+echo installing pytorch
+pip3 install torch==1.10.0+cu113 torchvision==0.11.1+cu113 torchaudio===0.10.0+cu113 -f https://download.pytorch.org/whl/cu113/torch_stable.html
+
+echo installing transformers
+pip install transformers
+
+#echo installing lpips
+#pip install lpips
+
+echo loading eth_proxy
+module load eth_proxy
+
+bsub -n 4 -W 4:00 -N -J "B0-64-8" -R "rusage[mem=8192, ngpus_excl_p=1]" -R "select[gpu_mtotal0>=11000]" -o 'B0-64-8eval.txt' python eval_with_large_model.py --block 0 --block_d_k 64 --block_heads 8 --storage_directory /cluster/scratch/winklerr/sitra
+bsub -n 4 -W 4:00 -N -J "B0-32-8" -R "rusage[mem=8192, ngpus_excl_p=1]" -R "select[gpu_mtotal0>=11000]" -o 'B0-32-8eval.txt' python eval_with_large_model.py --block 0 --block_d_k 32 --block_heads 8 --storage_directory /cluster/scratch/winklerr/sitra
+bsub -n 4 -W 4:00 -N -J "B0-16-8" -R "rusage[mem=8192, ngpus_excl_p=1]" -R "select[gpu_mtotal0>=11000]" -o 'B0-16-8eval.txt' python eval_with_large_model.py --block 0 --block_d_k 16 --block_heads 8 --storage_directory /cluster/scratch/winklerr/sitra
+
+bsub -n 4 -W 4:00 -N -J "B1-64-8" -R "rusage[mem=8192, ngpus_excl_p=1]" -R "select[gpu_mtotal0>=11000]" -o 'B1-64-8eval.txt' python eval_with_large_model.py --block 1 --block_d_k 64 --block_heads 8 --storage_directory /cluster/scratch/winklerr/sitra
+bsub -n 4 -W 4:00 -N -J "B1-32-8" -R "rusage[mem=8192, ngpus_excl_p=1]" -R "select[gpu_mtotal0>=11000]" -o 'B1-32-8eval.txt' python eval_with_large_model.py --block 1 --block_d_k 32 --block_heads 8 --storage_directory /cluster/scratch/winklerr/sitra
+bsub -n 4 -W 4:00 -N -J "B1-16-8" -R "rusage[mem=8192, ngpus_excl_p=1]" -R "select[gpu_mtotal0>=11000]" -o 'B1-16-8eval.txt' python eval_with_large_model.py --block 1 --block_d_k 16 --block_heads 8 --storage_directory /cluster/scratch/winklerr/sitra
+
+bsub -n 4 -W 4:00 -N -J "B10-64-8" -R "rusage[mem=8192, ngpus_excl_p=1]" -R "select[gpu_mtotal0>=11000]" -o 'B10-64-8eval.txt' python eval_with_large_model.py --block 10 --block_d_k 64 --block_heads 8 --storage_directory /cluster/scratch/winklerr/sitra
+bsub -n 4 -W 4:00 -N -J "B10-32-8" -R "rusage[mem=8192, ngpus_excl_p=1]" -R "select[gpu_mtotal0>=11000]" -o 'B10-32-8eval.txt' python eval_with_large_model.py --block 10 --block_d_k 32 --block_heads 8 --storage_directory /cluster/scratch/winklerr/sitra
+bsub -n 4 -W 4:00 -N -J "B10-16-8" -R "rusage[mem=8192, ngpus_excl_p=1]" -R "select[gpu_mtotal0>=11000]" -o 'B10-16-8eval.txt' python eval_with_large_model.py --block 10 --block_d_k 16 --block_heads 8 --storage_directory /cluster/scratch/winklerr/sitra
+
+bsub -n 4 -W 4:00 -N -J "B11-64-8" -R "rusage[mem=8192, ngpus_excl_p=1]" -R "select[gpu_mtotal0>=11000]" -o 'B11-64-8eval.txt' python eval_with_large_model.py --block 11 --block_d_k 64 --block_heads 8 --storage_directory /cluster/scratch/winklerr/sitra
+bsub -n 4 -W 4:00 -N -J "B11-32-8" -R "rusage[mem=8192, ngpus_excl_p=1]" -R "select[gpu_mtotal0>=11000]" -o 'B11-32-8eval.txt' python eval_with_large_model.py --block 11 --block_d_k 32 --block_heads 8 --storage_directory /cluster/scratch/winklerr/sitra
+bsub -n 4 -W 4:00 -N -J "B11-16-8" -R "rusage[mem=8192, ngpus_excl_p=1]" -R "select[gpu_mtotal0>=11000]" -o 'B11-16-8eval.txt' python eval_with_large_model.py --block 11 --block_d_k 16 --block_heads 8 --storage_directory /cluster/scratch/winklerr/sitra
+
+bsub -n 4 -W 4:00 -N -J "B0-64-4" -R "rusage[mem=8192, ngpus_excl_p=1]" -R "select[gpu_mtotal0>=11000]" -o 'B0-64-4eval.txt' python eval_with_large_model.py --block 0 --block_d_k 64 --block_heads 4 --storage_directory /cluster/scratch/winklerr/sitra
+bsub -n 4 -W 4:00 -N -J "B0-32-4" -R "rusage[mem=8192, ngpus_excl_p=1]" -R "select[gpu_mtotal0>=11000]" -o 'B0-32-4eval.txt' python eval_with_large_model.py --block 0 --block_d_k 32 --block_heads 4 --storage_directory /cluster/scratch/winklerr/sitra
+bsub -n 4 -W 4:00 -N -J "B0-16-4" -R "rusage[mem=8192, ngpus_excl_p=1]" -R "select[gpu_mtotal0>=11000]" -o 'B0-16-4eval.txt' python eval_with_large_model.py --block 0 --block_d_k 16 --block_heads 4 --storage_directory /cluster/scratch/winklerr/sitra
+
+bsub -n 4 -W 4:00 -N -J "B1-64-4" -R "rusage[mem=8192, ngpus_excl_p=1]" -R "select[gpu_mtotal0>=11000]" -o 'B1-64-4eval.txt' python eval_with_large_model.py --block 1 --block_d_k 64 --block_heads 4 --storage_directory /cluster/scratch/winklerr/sitra
+bsub -n 4 -W 4:00 -N -J "B1-32-4" -R "rusage[mem=8192, ngpus_excl_p=1]" -R "select[gpu_mtotal0>=11000]" -o 'B1-32-4eval.txt' python eval_with_large_model.py --block 1 --block_d_k 32 --block_heads 4 --storage_directory /cluster/scratch/winklerr/sitra
+bsub -n 4 -W 4:00 -N -J "B1-16-4" -R "rusage[mem=8192, ngpus_excl_p=1]" -R "select[gpu_mtotal0>=11000]" -o 'B1-16-4eval.txt' python eval_with_large_model.py --block 1 --block_d_k 16 --block_heads 4 --storage_directory /cluster/scratch/winklerr/sitra
+
+bsub -n 4 -W 4:00 -N -J "B10-64-4" -R "rusage[mem=8192, ngpus_excl_p=1]" -R "select[gpu_mtotal0>=11000]" -o 'B10-64-4eval.txt' python eval_with_large_model.py --block 10 --block_d_k 64 --block_heads 4 --storage_directory /cluster/scratch/winklerr/sitra
+bsub -n 4 -W 4:00 -N -J "B10-32-4" -R "rusage[mem=8192, ngpus_excl_p=1]" -R "select[gpu_mtotal0>=11000]" -o 'B10-32-4eval.txt' python eval_with_large_model.py --block 10 --block_d_k 32 --block_heads 4 --storage_directory /cluster/scratch/winklerr/sitra
+bsub -n 4 -W 4:00 -N -J "B10-16-4" -R "rusage[mem=8192, ngpus_excl_p=1]" -R "select[gpu_mtotal0>=11000]" -o 'B10-16-4eval.txt' python eval_with_large_model.py --block 10 --block_d_k 16 --block_heads 4 --storage_directory /cluster/scratch/winklerr/sitra
+
+bsub -n 4 -W 4:00 -N -J "B11-64-4" -R "rusage[mem=8192, ngpus_excl_p=1]" -R "select[gpu_mtotal0>=11000]" -o 'B11-64-4eval.txt' python eval_with_large_model.py --block 11 --block_d_k 64 --block_heads 4 --storage_directory /cluster/scratch/winklerr/sitra
+bsub -n 4 -W 4:00 -N -J "B11-32-4" -R "rusage[mem=8192, ngpus_excl_p=1]" -R "select[gpu_mtotal0>=11000]" -o 'B11-32-4eval.txt' python eval_with_large_model.py --block 11 --block_d_k 32 --block_heads 4 --storage_directory /cluster/scratch/winklerr/sitra
+bsub -n 4 -W 4:00 -N -J "B11-16-4" -R "rusage[mem=8192, ngpus_excl_p=1]" -R "select[gpu_mtotal0>=11000]" -o 'B11-16-4eval.txt' python eval_with_large_model.py --block 11 --block_d_k 16 --block_heads 4 --storage_directory /cluster/scratch/winklerr/sitra
+
+bsub -n 4 -W 4:00 -N -J "B0-64-1" -R "rusage[mem=8192, ngpus_excl_p=1]" -R "select[gpu_mtotal0>=11000]" -o 'B0-64-1eval.txt' python eval_with_large_model.py --block 0 --block_d_k 64 --block_heads 1 --storage_directory /cluster/scratch/winklerr/sitra
+bsub -n 4 -W 4:00 -N -J "B0-32-1" -R "rusage[mem=8192, ngpus_excl_p=1]" -R "select[gpu_mtotal0>=11000]" -o 'B0-32-1eval.txt' python eval_with_large_model.py --block 0 --block_d_k 32 --block_heads 1 --storage_directory /cluster/scratch/winklerr/sitra
+bsub -n 4 -W 4:00 -N -J "B0-16-1" -R "rusage[mem=8192, ngpus_excl_p=1]" -R "select[gpu_mtotal0>=11000]" -o 'B0-16-1eval.txt' python eval_with_large_model.py --block 0 --block_d_k 16 --block_heads 1 --storage_directory /cluster/scratch/winklerr/sitra
+
+bsub -n 4 -W 4:00 -N -J "B1-64-1" -R "rusage[mem=8192, ngpus_excl_p=1]" -R "select[gpu_mtotal0>=11000]" -o 'B1-64-1eval.txt' python eval_with_large_model.py --block 1 --block_d_k 64 --block_heads 1 --storage_directory /cluster/scratch/winklerr/sitra
+bsub -n 4 -W 4:00 -N -J "B1-32-1" -R "rusage[mem=8192, ngpus_excl_p=1]" -R "select[gpu_mtotal0>=11000]" -o 'B1-32-1eval.txt' python eval_with_large_model.py --block 1 --block_d_k 32 --block_heads 1 --storage_directory /cluster/scratch/winklerr/sitra
+bsub -n 4 -W 4:00 -N -J "B1-16-1" -R "rusage[mem=8192, ngpus_excl_p=1]" -R "select[gpu_mtotal0>=11000]" -o 'B1-16-1eval.txt' python eval_with_large_model.py --block 1 --block_d_k 16 --block_heads 1 --storage_directory /cluster/scratch/winklerr/sitra
+
+bsub -n 4 -W 4:00 -N -J "B10-64-1" -R "rusage[mem=8192, ngpus_excl_p=1]" -R "select[gpu_mtotal0>=11000]" -o 'B10-64-1eval.txt' python eval_with_large_model.py --block 10 --block_d_k 64 --block_heads 1 --storage_directory /cluster/scratch/winklerr/sitra
+bsub -n 4 -W 4:00 -N -J "B10-32-1" -R "rusage[mem=8192, ngpus_excl_p=1]" -R "select[gpu_mtotal0>=11000]" -o 'B10-32-1eval.txt' python eval_with_large_model.py --block 10 --block_d_k 32 --block_heads 1 --storage_directory /cluster/scratch/winklerr/sitra
+bsub -n 4 -W 4:00 -N -J "B10-16-1" -R "rusage[mem=8192, ngpus_excl_p=1]" -R "select[gpu_mtotal0>=11000]" -o 'B10-16-1eval.txt' python eval_with_large_model.py --block 10 --block_d_k 16 --block_heads 1 --storage_directory /cluster/scratch/winklerr/sitra
+
+bsub -n 4 -W 4:00 -N -J "B11-64-1" -R "rusage[mem=8192, ngpus_excl_p=1]" -R "select[gpu_mtotal0>=11000]" -o 'B11-64-1eval.txt' python eval_with_large_model.py --block 11 --block_d_k 64 --block_heads 1 --storage_directory /cluster/scratch/winklerr/sitra
+bsub -n 4 -W 4:00 -N -J "B11-32-1" -R "rusage[mem=8192, ngpus_excl_p=1]" -R "select[gpu_mtotal0>=11000]" -o 'B11-32-1eval.txt' python eval_with_large_model.py --block 11 --block_d_k 32 --block_heads 1 --storage_directory /cluster/scratch/winklerr/sitra
+bsub -n 4 -W 4:00 -N -J "B11-16-1" -R "rusage[mem=8192, ngpus_excl_p=1]" -R "select[gpu_mtotal0>=11000]" -o 'B11-16-1eval.txt' python eval_with_large_model.py --block 11 --block_d_k 16 --block_heads 1 --storage_directory /cluster/scratch/winklerr/sitra

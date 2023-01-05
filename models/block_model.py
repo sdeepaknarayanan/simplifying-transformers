@@ -1,6 +1,7 @@
 import argparse
 
 import numpy as np
+import logging
 import torch
 from torch import nn
 from torch.optim import Adam
@@ -101,7 +102,80 @@ class BLOCK(BaseModule):
         loss = criterion(x, y)
 
         return x, loss
-    
+
+    def load_state(self, load_optimizer: bool = True):
+        if self.conf.block_load_checkpoint:
+            path = (
+                    self.conf.storage_directory + '/models/_checkpoints/' + self.conf.dataset + '/block_'
+                    + str(self.conf.block) + '_' + str(self.conf.block_d_k) + '_' + str(self.conf.block_heads) + '/'
+                    + 'BLOCK-latest.pth'
+            )
+            tmp = path
+
+            print(f"Block Path: {path}")
+            if os.path.exists(path):
+                try:
+                    from collections import OrderedDict
+
+                    checkpoint = torch.load(path)
+                    print("Loaded block checkpoint")
+                    try:
+                        state_dict = checkpoint['model_state_dict']
+                        if self.conf.train and load_optimizer:
+                            opt_state_dict = checkpoint['optimizer_state_dict']
+
+                            new_opt_state_dict = OrderedDict()
+                            for k, v in state_dict.items():
+
+                                if k[0:7] != 'module.':
+                                    new_opt_state_dict = opt_state_dict
+                                    break
+                                else:
+                                    name = k[7:]  # remove `module.`
+                                    new_opt_state_dict[name] = v
+
+                            self.optimizer.load_state_dict(new_opt_state_dict)
+
+                    except KeyError:
+                        state_dict = checkpoint
+                        logging.warning('Could not access ["model_state_dict"] for {t}, this is expected for foreign models'
+                                        .format(t=tmp))
+
+                    new_state_dict = OrderedDict()
+                    for k, v in state_dict.items():
+
+                        if k[0:7] != 'module.':
+                            new_state_dict = state_dict
+                            break
+                        else:
+                            name = k[7:]  # remove `module.`
+                            new_state_dict[name] = v
+
+                    try:
+                        self.load_state_dict(new_state_dict)
+                        print('Successfully loaded state dict for block model')
+                    except Exception as e:
+                        logging.warning('Failed to load state dict into model\n{e}'
+                                        .format(e=e))
+
+                    try:
+                        self.epoch = checkpoint['epoch']
+                    except KeyError as e:
+                        logging.warning('Failed to load epoch from state dict, epoch is set to 0:\n{e}'
+                                        .format(e=e))
+                        self.epoch = 0
+
+                except RuntimeError as e:
+                    logging.warning('Failed to load state dict into model. No State was loaded and model is initialized'
+                                    'randomly. Epoch is set to 0:\n{e}'
+                                    .format(e=e))
+                    self.epoch = 0
+
+            else:
+                if self.conf.block_model_checkpoint != '':
+                    logging.warning('Could not find a state dict for block model at the location specified.')
+                self.epoch = 0
+
     def save_model(self, running: bool = True):
         """
         Save the model state_dict to models/checkpoint/
@@ -158,7 +232,8 @@ class BLOCK(BaseModule):
         parser.add_argument('--block_heads', type=int, default=12, help='# of attention heads')
         parser.add_argument('--block_d_k', type=int, default=64, help='length of the key/query/value for each head')
         parser.add_argument('--block_dropout', type=float, default=0.1, help='dropout probability')
-        parser.add_argument('--block_model_checkpoint', type=str, default='', help=
-                            'path to a model_state_dict which will be loaded into the model before training/eval')
+        parser.add_argument('--block_load_checkpoint', dest='block_load_checkpoint', action='store_true')
+        parser.add_argument('--block_no_checkpoint', dest='block_load_checkpoint', action='store_false')
+        parser.set_defaults(load_checkpoint=False)
 
         return parser
