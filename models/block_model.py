@@ -234,6 +234,6 @@ class BLOCK(BaseModule):
         parser.add_argument('--block_dropout', type=float, default=0.1, help='dropout probability')
         parser.add_argument('--block_load_checkpoint', dest='block_load_checkpoint', action='store_true')
         parser.add_argument('--block_no_checkpoint', dest='block_load_checkpoint', action='store_false')
-        parser.set_defaults(load_checkpoint=False)
+        parser.set_defaults(load_checkpoint=True)
 
         return parser
