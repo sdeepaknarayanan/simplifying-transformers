@@ -7,33 +7,32 @@ import datasets
 import models
 
 
-class BaseConfig:
+class BlockConfig:
 
     def __init__(self):
         self.name = 'base options'
 
-
-        NETWORKS = ['BERT','BERTLM','BLOCK']
+        NETWORKS = ['BLOCK']
         DATASETS = ['wikitext2','block_training']
 
 
         parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
-        parser.add_argument('--model', type=str, default='BERTLM', help='Choose the network to work with.',
+        parser.add_argument('--model', type=str, default='BLOCK', help='Choose the network to work with.',
                             choices=NETWORKS)
         parser.add_argument('--dataset', type=str, default='wikitext2', help='Choose the dataset to train on.',
                             choices=DATASETS)
-        parser.add_argument('--model_checkpoint', type=str, default="models/_checkpoints/wikitext2/BERTLM-latest.pth",
-                            help="this checkpoint is loaded before training")
 
         parser.add_argument('--vocab', type=str, default='bert-google', choices=['bert-google', 'codertimo'])
         parser.add_argument('--bert_google_vocab', type=str, default='data/uncased_L-12_H-768_A-12/vocab.txt')
         parser.add_argument('--vocab_path', type=str, default="data/wikitext2/all.txt",
                             help='built vocab model path with bert-vocab')
+
         parser.add_argument('--vocab_max_size', type=int, default=None, help='Number of epochs to train for.')
         parser.add_argument('--vocab_min_frequency', type=int, default=1,
                             help='The minimum frequency needed to include a token in the vocabulary. Values less than'
                                  '1 will be set to 1. Default: 1')
+
 
         parser.add_argument('--storage_directory', type=str, default=os.path.dirname(os.path.abspath(__file__)).replace(
             '\\config', '').replace('/config', ''),
@@ -42,9 +41,8 @@ class BaseConfig:
         parser.add_argument('--device', type=str, default='cuda' if torch.cuda.is_available() else 'cpu', help=
                             'Execution device, cuda is default if device has a cuda ready GPU', choices=['cpu', 'cuda'])
 
-        parser.add_argument('--print_no_samples', dest='print_samples', action='store_false')
         parser.add_argument('--print_samples', dest='print_samples', action='store_true')
-
+        parser.add_argument('--print_no_samples', dest='print_samples', action='store_false')
         parser.set_defaults(print_samples=True)
 
         parser.add_argument("-o", "--output_path",
@@ -55,11 +53,12 @@ class BaseConfig:
 
         parser.add_argument("--log_freq", type=int, default=10, help="printing loss every n iter: setting n")
 
-
+        parser = models.get("BERTLM").extend_parser(parser)
         self.parser = parser
-        print(self.parser)
         self.parser = self.gather()
+     
 
+        
     def get_parser(self):
         return self.parser
 
