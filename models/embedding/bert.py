@@ -4,7 +4,7 @@ from models.base_model import BaseModule
 from models.embedding.position import PositionalEmbedding
 from models.embedding.segment import SegmentEmbedding
 from models.embedding.token import TokenEmbedding
-
+from models.modules.sublayer_connection import LayerNorm
 
 class BERTEmbedding(BaseModule):
     """
@@ -27,8 +27,10 @@ class BERTEmbedding(BaseModule):
         self.position = PositionalEmbedding(d_model=self.token.embedding_dim)
         self.segment = SegmentEmbedding(embed_size=self.token.embedding_dim)
         self.dropout = nn.Dropout(p=dropout)
+        self.layer_norm = LayerNorm(embed_size, eps=1e-12)
         self.embed_size = embed_size
 
     def forward(self, sequence, segment_label):
         x = self.token(sequence) + self.position(sequence) + self.segment(segment_label)
+        x = self.layer_norm(x)
         return self.dropout(x)
