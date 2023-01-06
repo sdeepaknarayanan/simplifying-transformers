@@ -1,40 +1,40 @@
 import logging
 
-import torch
+import torch.backends.cudnn
 
 import datasets
 import models
 from config.train_config import TrainConfig
 # torch.backends.cudnn.benchmark = True
-from datasets.vocabulary import WordVocab
 
+from train_block import train_block
+from config.train_config import BlockTrainConfig
 
-def main(conf):
-    """
-    Main training function. Coordinates training and calls all relevant functions.
-    The functionality is mostly found on other files, so think of this as a coordination hub and not training logic.
+def train_block(conf):
+    """ 
+    Training for a single attention block. Similary structured as main in train.py but just for one block.
 
-    :param conf: config object from arg parser containing all the training configuration
+    :param conf: config object from arg parser containing all the block training configuration
     :return:
+    
     """
 
-    vocab = datasets.get_vocab(conf)
     # load the dataset specified with --dataset_name & get data loaders
-    train_dataset = datasets.get(dataset_name=conf.dataset)(config=conf, vocab=vocab)
-    test_dataset = datasets.get(dataset_name=conf.dataset)(config=conf, vocab=vocab, split="test")
+    train_dataset = datasets.get(dataset_name=conf.dataset)(config=conf)
+    test_dataset = datasets.get(dataset_name=conf.dataset)(config=conf, split="test")
 
     train_loader = train_dataset.get_data_loader()
     test_loader = test_dataset.get_data_loader()
 
     # load the model specified with --model_name
-    model = models.get(model_name=conf.model)(config=conf, vocab_size=len(vocab))
+    model = models.get(model_name=conf.model)(config=conf)
+
     model.initialize_sample(batch=next(iter(test_loader)))
-    print("Before Load")
-    model.load_state()
 
     logging.log(logging.INFO, "Initialized")
-    # load loss and evaluation metric
-    criterion = torch.nn.NLLLoss(ignore_index=0)
+
+    # load loss and evaluation metric 
+    criterion = torch.nn.MSELoss()
 
     # if a model checkpoint was loaded then the epoch is set to the epoch the model was saved on (continue training)
     epoch = model.epoch
@@ -66,12 +66,13 @@ def main(conf):
         epoch += 1
 
 
+
 if __name__ == "__main__":
 
     # gather necessary config data from different parsers and combine.
-    option = TrainConfig()
+    option = BlockTrainConfig()
     option.print()
     config = option.get()
 
     # start training
-    main(config)
+    train_block(config)
