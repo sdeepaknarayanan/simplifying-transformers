@@ -1,11 +1,17 @@
 from models.bert import BERT, BERTLM
+from models.block_model import BLOCK
+from models.merge_model import MERGE
 
 
 def get(model_name: str):
-    match model_name:
-        case 'BERT':
-            return BERT
-        case 'BERTLM':
-            return BERTLM
-        case _:
-            raise NotImplementedError
+    if model_name == 'BERT':
+        return BERT
+    if model_name == 'BERTLM':
+        return  BERTLM
+    if model_name == 'BLOCK':
+        return BLOCK
+    if model_name == 'MERGE':
+        return MERGE
+    else:
+        raise NotImplementedError
+

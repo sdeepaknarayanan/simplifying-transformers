@@ -73,7 +73,8 @@ class BaseModel(BaseModule):
         self.sample = batch
 
     @torch.no_grad()
-    def evaluate(self, data, criterion=None) -> Tuple[dict, float]:
+    def evaluate(self, data, criterion=None) -> Tuple[dict, Tuple[float, float, float]]:
+        from sklearn.metrics import f1_score
         self.eval()
 
         # send data-points to device (GPU)
@@ -81,12 +82,22 @@ class BaseModel(BaseModule):
             data.update({key: value.to(self.conf.device)})
 
         # make prediction for the current batch
-        data.update({'pred': self.forward(data['bert_input'], data['segment_label'])})
-        # compute loss if one is provided. make sure the losses output their values to some log, as no loss value is
-        # returned here
-        loss = criterion(data['pred'].transpose(1, 2), data['bert_label']).item() if criterion is not None else None
+        with torch.no_grad():
+            data.update({'pred': self.forward(data['bert_input'], data['segment_label'])})
 
-        return data, loss
+        # print(data['pred'].size(), data['mask_index'].size(), torch.min(data['mask_index']), torch.max(data['mask_index']))
+        masked_prediction = data['pred'][torch.arange(data['pred'].size(0)), data['mask_index']]
+
+        predicted_label = torch.argmax(masked_prediction, dim=1)
+        gt_label = data['bert_label'][torch.arange(data['pred'].size(0)), data['mask_index']]
+
+        # precision = torch.sum(predicted_label == gt_label) / data['pred'].size(0)
+        cross_e = torch.nn.functional.cross_entropy(masked_prediction, gt_label)
+        perplex = torch.sum(torch.exp(cross_e)) / data['pred'].size(0)
+
+        f1 = f1_score(gt_label.cpu(), predicted_label.cpu(), average='micro')
+
+        return data, (f1, (cross_e / data['pred'].size(0)).item(), perplex.item())
 
     def save_model(self, running: bool = True):
         """
@@ -95,8 +106,7 @@ class BaseModel(BaseModule):
             if false, the state_dict ist store with an epoch number and will not be overwritten during this training.
         :return:
         """
-        file_dir = self.conf.storage_directory + '/models/_checkpoints/' + self.conf.dataset + '_' +\
-                   self.conf.dataset + '/'
+        file_dir = self.conf.storage_directory + '/models/_checkpoints/' + self.conf.dataset + '/'
 
         if not os.path.exists(file_dir):
             os.makedirs(file_dir)
@@ -110,29 +120,34 @@ class BaseModel(BaseModule):
             'epoch': self.epoch,
         }, file_dir + file_name)
 
-    def print_sample(self):
+    def print_sample(self, data):
         """
         Predict the sample batch with the current model weights and store the result in the out folder
         :return:
         """
-
         # TODO: implement
         # load and predict the sample batch
-        data = self.sample.copy()
-        data, loss = self.evaluate(data)
+        data, _ = self.evaluate(data)
+        print(data['pred'].size())
+        print(torch.argmax(data['pred'][0]))
+        print(data['bert_input'][0])
+        print(data['segment_label'][0])
+        exit()
 
-    def load_state(self):
+    def load_state(self, load_optimizer: bool = True):
         path = self.conf.model_checkpoint
         tmp = path
 
+        print(path)
         if os.path.exists(path):
             try:
                 from collections import OrderedDict
 
                 checkpoint = torch.load(path)
+                print("Loaded checkpoint")
                 try:
                     state_dict = checkpoint['model_state_dict']
-                    if self.conf.train:
+                    if self.conf.train and load_optimizer:
                         opt_state_dict = checkpoint['optimizer_state_dict']
 
                         new_opt_state_dict = OrderedDict()
@@ -183,8 +198,8 @@ class BaseModel(BaseModule):
                 self.epoch = 0
 
         else:
-            if self.conf.model_checkpoint != '':
-                logging.warning('Could not find a state dict at the location specified.')
+            if self.conf.block_model_checkpoint != '':
+                logging.warning('Could not find a state dict for block model at the location specified.')
             self.epoch = 0
 
     def save_and_step(self):
@@ -204,5 +219,5 @@ class BaseModel(BaseModule):
     def extend_parser(parser):
         parser.add_argument('--model_checkpoint', type=str, default='', help=
                             'path to a model_state_dict which will be loaded into the model before training/eval')
-
+        parser.add_argument('--storage_directory', type=str, default="")
         return parser
