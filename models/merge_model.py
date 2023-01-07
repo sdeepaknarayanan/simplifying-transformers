@@ -26,7 +26,7 @@ class MERGE(BaseModule):
         self.conf = config
         self.epoch = 0
 
-        self.transformer = TransformerAdapted(self.hidden, self.attn_heads, self.hidden*4, config.dropout)
+        self.transformer = TransformerAdapted(self.hidden, self.attn_heads, self.hidden*4, self.d_k, config.dropout)
         # self.output_linear = nn.Linear(self.hidden, self.hidden)
 
         self.optimizer = Adam(
@@ -44,11 +44,12 @@ class MERGE(BaseModule):
 
         self.to(config.device)
 
-    def forward(self, x):
-        
-        return self.transformer(x)
+    def forward(self, x,mask):
 
-    def train_batch(self, data, criterion):
+        
+        return self.transformer(x,mask)
+
+    def train_batch(self, data,mask, criterion):
         """
         Predict for the current batch, compute loss and optimize model weights
         :param data: dictionary containing entries image, label & mask
@@ -62,12 +63,13 @@ class MERGE(BaseModule):
         # send data-points to device (GPU)
         x = x.to(self.device)
         y = y.to(self.device)
+        mask = mask.to(self.device)
 
         for param in self.parameters():
             param.grad = None
 
         # make prediction for the current batch
-        prediction = self.forward(x)
+        prediction = self.forward(x,mask)
 
         loss = criterion(prediction, y)
 
