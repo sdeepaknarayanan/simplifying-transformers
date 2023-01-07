@@ -71,7 +71,7 @@ class MergeTrainConfig(BlockConfig):
     def __init__(self):
         super(BlockConfig).__init__()
         self.name = 'training options'
-        parser = BlockConfig().get_parser()
+        parser = MergeConfig().get_parser()
 
         parser.add_argument('--train', dest='train', action='store_true')
         parser.set_defaults(train=True)
