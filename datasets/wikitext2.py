@@ -129,7 +129,7 @@ class WikiText2Dataset(BaseDataset):
     def get_data_loader(self):
         return DataLoader(self,
                           batch_size=self.config.batch_size,
-                          num_workers=self.config.num_workers)
+                          num_workers=self.config.num_workers, shuffle= 2)
 
     @staticmethod
     def extend_parser(parser) -> argparse.ArgumentParser:
