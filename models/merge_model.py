@@ -49,7 +49,7 @@ class MERGE(BaseModule):
         
         return self.transformer(x,mask)
 
-    def train_batch(self, data,mask, criterion):
+    def train_batch(self, data, mask, criterion):
         """
         Predict for the current batch, compute loss and optimize model weights
         :param data: dictionary containing entries image, label & mask
@@ -70,9 +70,8 @@ class MERGE(BaseModule):
 
         # make prediction for the current batch
         prediction = self.forward(x,mask)
-
         loss = criterion(prediction, y)
-
+        self.optimizer.zero_grad()
         loss.backward()
         self.optimizer.step()
 
@@ -83,10 +82,9 @@ class MERGE(BaseModule):
         self.sample = batch
     
     @torch.no_grad()
-    def evaluate(self, data, criterion=None) -> Tuple[float, float]:
+    def evaluate(self, data, mask, criterion=None) -> Tuple[float, float]:
 
         self.eval()
-
 
         x,y = data
 
@@ -94,9 +92,10 @@ class MERGE(BaseModule):
          # send data-points to device (GPU)
         x = x.to(self.device)
         y = y.to(self.device)
+        mask = mask.to(self.device)
 
         # make prediction for the current batch
-        x = self.forward(x)
+        x = self.forward(x,mask)
         # compute loss if one is provided. make sure the losses output their values to some log, as no loss value is
         # returned here
         loss = criterion(x, y)
