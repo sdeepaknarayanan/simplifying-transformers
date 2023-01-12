@@ -140,6 +140,7 @@ class BLOCK(BaseModule):
                         state_dict = checkpoint
                         logging.warning('Could not access ["model_state_dict"] for {t}, this is expected for foreign models'
                                         .format(t=tmp))
+                        exit()
 
                     new_state_dict = OrderedDict()
                     for k, v in state_dict.items():
@@ -157,6 +158,7 @@ class BLOCK(BaseModule):
                     except Exception as e:
                         logging.warning('Failed to load state dict into model\n{e}'
                                         .format(e=e))
+                        exit()
 
                     try:
                         self.epoch = checkpoint['epoch']
@@ -164,17 +166,20 @@ class BLOCK(BaseModule):
                         logging.warning('Failed to load epoch from state dict, epoch is set to 0:\n{e}'
                                         .format(e=e))
                         self.epoch = 0
+                        exit()
 
                 except RuntimeError as e:
                     logging.warning('Failed to load state dict into model. No State was loaded and model is initialized'
                                     'randomly. Epoch is set to 0:\n{e}'
                                     .format(e=e))
                     self.epoch = 0
+                    exit()
 
             else:
                 if self.conf.block_model_checkpoint != '':
                     logging.warning('Could not find a state dict for block model at the location specified.')
                 self.epoch = 0
+                exit()
 
     def save_model(self, running: bool = True):
         """

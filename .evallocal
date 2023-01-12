@@ -1,0 +1,12 @@
+#!/bin/bash
+
+for block in 0 1 2 3 4 5 6 7 8 9 10 11
+do
+  for dk in 64 32 16
+  do
+    for heads in 1 4 8 12
+    do
+      python.exe eval_with_large_model.py --block $block --block_d_k $dk --block_heads $heads
+    done
+  done
+done
