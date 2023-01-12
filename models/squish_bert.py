@@ -189,7 +189,7 @@ class RetrainedTransformer(BaseModule):
         self.to(config.device)
 
     def forward(self, x):
-        x = self.attentionblock(x, x, x)
+        x = self.input_sublayer(x, lambda _x: self.attentionblock.forward(_x, _x, _x))
         x = self.output_sublayer(x, self.feed_forward)
         return self.dropout(x)
 
