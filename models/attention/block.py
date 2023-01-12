@@ -9,7 +9,7 @@ class BlockMultiHeadedAttention(BaseModule):
     Take in model size and number of heads.
     """
 
-    def __init__(self, h, d_model, d_k = 64, dropout=0.1, out_linear_overwrite: int = None):
+    def __init__(self, h, d_model, d_k = 64, dropout=0.1):
         super().__init__()
         assert d_model % h == 0
 

@@ -132,3 +132,4 @@ dmypy.json
 /models/_checkpoints/
 /out/
 /old/
+/out_squish/

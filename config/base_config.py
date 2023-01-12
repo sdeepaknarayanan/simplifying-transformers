@@ -13,7 +13,7 @@ class BaseConfig:
         self.name = 'base options'
 
 
-        NETWORKS = ['BERT','BERTLM','BLOCK']
+        NETWORKS = ['BERT','BERTLM','BLOCK', 'SquishBert']
         DATASETS = ['wikitext2','block_training']
 
 

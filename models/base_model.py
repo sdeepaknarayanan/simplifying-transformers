@@ -134,8 +134,10 @@ class BaseModel(BaseModule):
         print(data['segment_label'][0])
         exit()
 
-    def load_state(self, load_optimizer: bool = True):
+    def load_state(self, load_optimizer: bool = True, overwrite_path: str = None):
         path = self.conf.model_checkpoint
+        if overwrite_path is not None:
+            path = overwrite_path
         tmp = path
 
         print(path)
