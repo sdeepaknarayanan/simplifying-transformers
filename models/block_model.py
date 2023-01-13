@@ -72,7 +72,7 @@ class BLOCK(BaseModule):
         prediction = self.forward(x)
 
         loss = criterion(prediction, y)
-
+        self.optimizer.zero_grad()
         loss.backward()
         self.optimizer.step()
 
