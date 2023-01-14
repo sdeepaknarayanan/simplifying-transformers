@@ -57,7 +57,6 @@ def train_block(conf):
 
         # Train on training-set
         for index, data in enumerate(train_loader):
-
             x = None
             y = None
             with torch.no_grad():
@@ -126,7 +125,7 @@ def train_block(conf):
                     break
                 x, _ = transformer.forward(x, mask)
 
-            y = transformer.input_sublayer(x, lambda _x: block_model.forward(_x))
+            y = transformer.input_sublayer(x, lambda _x: block_model.forward(_x, mask=mask)[0])
             y = transformer.output_sublayer(y, transformer.feed_forward)
             y = transformer.dropout(y)
 

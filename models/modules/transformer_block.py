@@ -28,6 +28,6 @@ class TransformerBlock(nn.Module):
 
     def forward(self, x, mask, _print=False):
         _, scores = self.attention.forward(x, x, x, mask=mask)
-        x = self.input_sublayer(x, lambda _x: self.attention.forward(_x, _x, _x, mask=mask, _print=_print))
+        x = self.input_sublayer(x, lambda _x: self.attention.forward(_x, _x, _x, mask=mask, _print=_print)[0])
         x = self.output_sublayer(x, self.feed_forward)
         return self.dropout(x), scores
