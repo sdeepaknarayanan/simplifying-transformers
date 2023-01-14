@@ -36,7 +36,7 @@ class MaskedLanguageModel(nn.Module):
         x = self.linear(x)
         x = self.act(x)
         x = self.layer_norm(x)
-        return self.decoder(x)
+        return self.softmax(self.decoder(x))
 
 
 class RetrainedBlock(BaseModule):
@@ -188,8 +188,8 @@ class RetrainedTransformer(BaseModule):
 
         self.to(config.device)
 
-    def forward(self, x):
-        x = self.attentionblock(x, x, x)
+    def forward(self, x, mask):
+        x = self.input_sublayer(x, lambda _x: self.attentionblock.forward(_x, _x, _x, mask=mask))
         x = self.output_sublayer(x, self.feed_forward)
         return self.dropout(x)
 
@@ -198,7 +198,7 @@ class SquishBert(BaseModel):
     def __init__(self,
                  config,
                  vocab_size: int,
-                 dks=[16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16],
+                 dks=[64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64],
                  heads=[12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12]):
         super(SquishBert, self).__init__(config)
         assert len(dks) == len(heads)
@@ -229,8 +229,14 @@ class SquishBert(BaseModel):
         ) if config.train else None
 
     def forward(self, x, segment_info):
+
+        mask = (x > 0).unsqueeze(1).repeat(1, x.size(1), 1).unsqueeze(1)
+
         x = self.embedding(x, segment_info)
-        x = self.layers(x)
+
+        for layer in self.layers:
+            x = layer(x, mask)
+
         x = self.mask_lm(x)
         return x
 

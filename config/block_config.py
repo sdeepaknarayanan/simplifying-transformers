@@ -49,7 +49,7 @@ class BlockConfig:
                             default="output/", type=str,
                             help="ex)output/bert.model")
 
-        parser.add_argument("-b", "--batch_size", type=int, default=64, help="number of batch_size")
+        parser.add_argument("-b", "--batch_size", type=int, default=1, help="number of batch_size")
 
         parser.add_argument("--log_freq", type=int, default=10, help="printing loss every n iter: setting n")
 

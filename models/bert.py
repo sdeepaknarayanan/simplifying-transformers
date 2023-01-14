@@ -31,7 +31,7 @@ class MaskedLanguageModel(nn.Module):
         x = self.linear(x)
         x = self.act(x)
         x = self.layer_norm(x)
-        return self.decoder(x)
+        return self.softmax(self.decoder(x))
 
 class BERT(BaseModel):
     def __init__(self, config, vocab_size: int, child: bool = True):
@@ -82,7 +82,7 @@ class BERT(BaseModel):
 
         # running over multiple transformer blocks
         for transformer in self.transformer_blocks:
-            x = transformer.forward(x, mask)
+            x, _ = transformer.forward(x, mask)
 
         return x
 

@@ -46,7 +46,8 @@ def train_block(conf):
     logging.log(logging.INFO, "Initialized")
 
     # load loss and evaluation metric 
-    criterion = torch.nn.MSELoss()
+    criterion = torch.nn.CrossEntropyLoss()
+    eval_criterion = torch.nn.MSELoss()
 
     # if a model checkpoint was loaded then the epoch is set to the epoch the model was saved on (continue training)
     epoch = block_model.epoch
@@ -68,11 +69,12 @@ def train_block(conf):
                 for layer, transformer in enumerate(base_model.bert.transformer_blocks):
                     if (layer == config.block):
                         break
-                    x = transformer.forward(x, mask)
+                    x, scores = transformer.forward(x, mask)
 
-                y = transformer.attention.forward(x, x, x, mask=mask)
+                y, scores = transformer.attention.forward(x, x, x, mask=mask, _print=False)
 
-            loss = block_model.train_batch((x, y), criterion)
+            loss = block_model.train_batch((x, scores), mask, criterion)
+
             print('Epoch {e:>2}, Batch [{b:>5}/{t:<5}]. Current loss: {l:.5f}'.format(
                 e=epoch, b=index + 1, t=len(train_loader), l=loss))
 
@@ -95,11 +97,12 @@ def train_block(conf):
                 for layer, transformer in enumerate(base_model.bert.transformer_blocks):
                     if layer == conf.block:
                         break
-                    x = transformer.forward(x, mask)
+                    x, scores = transformer.forward(x, mask)
 
-                y = transformer.attention.forward(x, x, x, mask=mask)
+                y, scores = transformer.attention.forward(x, x, x, mask=mask)
 
-            x, loss = block_model.evaluate((x, y), criterion)
+            x, loss = block_model.evaluate((x, y), mask, eval_criterion)
+
             print('Epoch {e:>2}, Batch [{b:>5}/{t:<5}] eval Current loss: {l:.5f}'.format(e=epoch, b=index + 1,
                                                                                           t=len(test_loader), l=loss))
 
@@ -121,7 +124,7 @@ def train_block(conf):
             for layer, transformer in enumerate(base_model.bert.transformer_blocks):
                 if layer == conf.block:
                     break
-                x = transformer.forward(x, mask)
+                x, _ = transformer.forward(x, mask)
 
             y = transformer.input_sublayer(x, lambda _x: block_model.forward(_x))
             y = transformer.output_sublayer(y, transformer.feed_forward)
@@ -129,8 +132,8 @@ def train_block(conf):
 
             for layer, transformer in enumerate(base_model.bert.transformer_blocks):
                 if layer <= conf.block:
-                    pass
-                y = transformer.forward(y, mask)
+                    continue
+                y, _ = transformer.forward(y, mask)
 
             y = base_model.mask_lm(y)
 

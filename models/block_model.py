@@ -28,7 +28,7 @@ class BLOCK(BaseModule):
         self.epoch = 0
 
         self.attentionblock = BlockMultiHeadedAttention(
-            self.attn_heads, self.hidden, d_k=self.d_k, dropout=self.dropout, out_linear_overwrite=self.out_hidden
+            self.attn_heads, self.hidden, d_k=self.d_k, dropout=self.dropout
         )
         # self.output_linear = nn.Linear(self.hidden, self.hidden)
 
@@ -47,10 +47,11 @@ class BLOCK(BaseModule):
 
         self.to(config.device)
 
-    def forward(self, x):
-        return self.attentionblock(x,x,x)
+    def forward(self, x, mask, _print=False):
+        x, scores = self.attentionblock(x,x,x, mask=mask, _print=_print)
+        return x, scores
 
-    def train_batch(self, data, criterion):
+    def train_batch(self, data, mask, criterion):
         """
         Predict for the current batch, compute loss and optimize model weights
         :param data: dictionary containing entries image, label & mask
@@ -69,9 +70,10 @@ class BLOCK(BaseModule):
             param.grad = None
 
         # make prediction for the current batch
-        prediction = self.forward(x)
+        prediction, scores = self.forward(x, mask=mask)
 
-        loss = criterion(prediction, y)
+        y = torch.softmax(y, dim=-1)
+        loss = criterion(scores, y)
 
         loss.backward()
         self.optimizer.step()
@@ -83,7 +85,7 @@ class BLOCK(BaseModule):
         self.sample = batch
     
     @torch.no_grad()
-    def evaluate(self, data, criterion=None) -> Tuple[float, float]:
+    def evaluate(self, data, mask, criterion=None) -> Tuple[float, float]:
 
         self.eval()
 
@@ -96,7 +98,7 @@ class BLOCK(BaseModule):
         y = y.to(self.device)
 
         # make prediction for the current batch
-        x = self.forward(x)
+        x, scores = self.forward(x, mask, _print=False)
         # compute loss if one is provided. make sure the losses output their values to some log, as no loss value is
         # returned here
         loss = criterion(x, y)

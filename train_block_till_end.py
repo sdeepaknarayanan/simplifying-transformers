@@ -83,7 +83,7 @@ def train_block(conf):
 
             for layer, transformer in enumerate(base_model.bert.transformer_blocks):
                 if layer <= conf.block:
-                    pass
+                    continue
                 y = transformer.forward(y, mask)
 
             y = base_model.mask_lm(y)
@@ -150,7 +150,7 @@ def train_block(conf):
 
             for layer, transformer in enumerate(base_model.bert.transformer_blocks):
                 if layer <= conf.block:
-                    pass
+                    continue
                 y = transformer.forward(y, mask)
 
             y = base_model.mask_lm(y)

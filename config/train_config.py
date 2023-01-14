@@ -46,7 +46,7 @@ class BlockTrainConfig(BlockConfig):
                             help="this checkpoint is loaded to the teacher before training")
         parser.add_argument('--epochs', type=int, default=15, help='Number of epochs to train for.')
 
-        parser.add_argument("--lr", type=float, default=1e-5, help="learning rate of adam")
+        parser.add_argument("--lr", type=float, default=1e-3, help="learning rate of adam")
         parser.add_argument("--adam_weight_decay", type=float, default=0.01, help="weight_decay of adam")
         parser.add_argument("--adam_beta1", type=float, default=0.9, help="adam first beta value")
         parser.add_argument("--adam_beta2", type=float, default=0.999, help="adam first beta value")

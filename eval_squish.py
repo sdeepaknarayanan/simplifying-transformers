@@ -21,15 +21,17 @@ def main(conf):
 
     squished = models.get(config.model)(config, vocab_size=len(vocab))
     squished.load_state(load_optimizer=False)
+    squished.eval()
 
     base_model = models.get(model_name="BERTLM")(config=conf, vocab_size=len(vocab))
-
     base_model.load_state(load_optimizer=False, overwrite_path="models/_checkpoints/wikitext2/BERTLM-latest.pth")
     base_model = base_model.to(conf.device)
+    base_model.eval()
 
     tokenizer_large = AutoTokenizer.from_pretrained("bert-large-uncased")
     model_large = AutoModelForMaskedLM.from_pretrained("bert-large-uncased")
     model_large = model_large.to(conf.device)
+    model_large.eval()
 
     logging.log(logging.INFO, "Initialized")
 
