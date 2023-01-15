@@ -79,7 +79,6 @@ class BERT(BaseModel):
 
         # embedding the indexed sequence to sequence of vectors
         x = self.embedding(x, segment_info)
-
         # running over multiple transformer blocks
         for transformer in self.transformer_blocks:
             x, _ = transformer.forward(x, mask)

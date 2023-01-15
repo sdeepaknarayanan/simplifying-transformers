@@ -189,9 +189,10 @@ class RetrainedTransformer(BaseModule):
         self.to(config.device)
 
     def forward(self, x, mask):
-        x = self.input_sublayer(x, lambda _x: self.attentionblock.forward(_x, _x, _x, mask=mask))
+        _, scores = self.attentionblock.forward(x, x, x, mask=mask)
+        x = self.input_sublayer(x, lambda _x: self.attentionblock.forward(_x, _x, _x, mask=mask)[0])
         x = self.output_sublayer(x, self.feed_forward)
-        return self.dropout(x)
+        return self.dropout(x), scores
 
 
 class SquishBert(BaseModel):
@@ -235,7 +236,7 @@ class SquishBert(BaseModel):
         x = self.embedding(x, segment_info)
 
         for layer in self.layers:
-            x = layer(x, mask)
+            x, _ = layer(x, mask)
 
         x = self.mask_lm(x)
         return x

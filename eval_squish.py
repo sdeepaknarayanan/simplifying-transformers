@@ -19,8 +19,8 @@ def main(conf):
     # train_loader = train_dataset.get_data_loader()
     test_loader = test_dataset.get_data_loader()
 
-    squished = models.get(config.model)(config, vocab_size=len(vocab))
-    squished.load_state(load_optimizer=False)
+    squished = models.get(model_name="SquishBert")(config, vocab_size=len(vocab))
+    squished.load_state(load_optimizer=False, overwrite_path='models/_checkpoints/wikitext2/SquishBert-latest.pth')
     squished.eval()
 
     base_model = models.get(model_name="BERTLM")(config=conf, vocab_size=len(vocab))
