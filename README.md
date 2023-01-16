@@ -56,4 +56,14 @@ Then run the following command:
 python .\finetune-fully-merged.py
 ```
 
+To run evaluate on a completly merged model, so 6 merged layers. One must creat a folder with the merged layers the exact same way as for finetuning the merged layers.
+
+Then run the following command:
+
+```shell
+#Evaluate a fully merged model
+python .\evaluate_fully_merged_layer.py
+
+
+
 
