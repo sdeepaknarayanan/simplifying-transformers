@@ -12,6 +12,8 @@ def get(model_name: str):
         return BLOCK
     if model_name == "MergedRetrainedBert":
         return MergedRetrainedBert
+    if model_name == 'MERGE':
+        return MERGE
     else:
         raise NotImplementedError
 
