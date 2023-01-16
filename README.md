@@ -4,7 +4,7 @@ Deep Learning Course Project, ETH Zurich 2022
 
 ## retraining an Attention Block
 
-To retrain a single Block using Bert as Teacher, run the following Command
+To retrain a single Block using Bert as Teacher, run the following command
 
 ```shell
 # Retrain Block 6 (0 indexing, so it's the 7th Block in BERT), using MSE as criterion.
@@ -28,3 +28,14 @@ python .\eval_merged_12.py --percentage_data 0.5
 ```
 
 Note that it is important that the Jupyter book was run before to store a checkpoint containing the retrained Bert's weights.
+
+## merge and train two layers
+
+To merge two layers and then train the layer, run the following command
+
+```shell
+# Merge layer 6 and 7(0 indexing, so it's the 7th and 8th layer in BERT), 
+# and then train the new single layer with 12 heads with query, key and value of size 64 per head.
+python .\retrain_merge.py --block 6 --block_heads 12 --block_d_k 64
+```
+
