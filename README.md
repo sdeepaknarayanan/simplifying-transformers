@@ -50,6 +50,6 @@ To fine tune a model with 6 merge layers. First run the train layer for all even
 Then name the files block 0, block 2 ... and put them in a folder namend merge_models_best 
 Then run the following command:
 ```shell
-#python .\
+#python .\finetune-fully-merged.py
 
 
