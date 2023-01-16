@@ -85,6 +85,7 @@ python train_full_merged_model.py
 Note that it is important that the Jupyter book was run before to store a checkpoint containing the retrained Bert's weights.
 
 ### Merge and Train multiple layers
+---
 
 To merge two layers and then train the layer, run the following command:
 
