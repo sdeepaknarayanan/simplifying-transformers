@@ -52,5 +52,6 @@ Then run the following command:
 ```shell
 #Fine tune all layers merged
 python .\finetune-fully-merged.py
+```
 
 
