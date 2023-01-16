@@ -100,7 +100,7 @@ def train_block(conf):
                         temp_x = x
                     if(layer == (config.block + 2)):
                         break
-                    x = transformer.forward(x, mask)
+                    x,_ = transformer.forward(x, mask)
 
             x, loss = block_model.evaluate((temp_x, x), mask, criterion)
             print('Epoch {e:>2}, Batch [{b:>5}/{t:<5}] eval Current loss: {l:.5f}'.format(e=epoch, b=index + 1,
@@ -124,14 +124,14 @@ def train_block(conf):
             for layer, transformer in enumerate(base_model.bert.transformer_blocks):
                     if (layer == config.block):
                         break
-                    x = transformer.forward(x, mask)
+                    x,_ = transformer.forward(x, mask)
 
             y = block_model.forward(x,mask)
 
             for layer, transformer in enumerate(base_model.bert.transformer_blocks):
                 if layer <= conf.block+1:
                     continue
-                y = transformer.forward(y, mask)
+                y,_ = transformer.forward(y, mask)
 
             y = base_model.mask_lm(y)
 
