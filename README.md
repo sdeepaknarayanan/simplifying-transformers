@@ -1,8 +1,47 @@
-# simplifying-transformers
+# Simplifying Transformers
 Deep Learning Course Project, ETH Zurich 2022
 
 
-## retraining an Attention Block
+We use ```Python 3.8.5``` for all our experiments.
+
+```shell
+conda create --name SiTra python=3.8
+
+conda install pytorch torchvision torchaudio pytorch-cuda=11.6 -c pytorch -c nvidia
+
+conda install -c conda-forge transformers
+
+conda install -c conda-forge tensorflow
+```
+
+To run the code on the euler cluster we provide examples in the .train and .eval bash scripts present in this repository.
+The --storage_directory flag needs to be adapted to your storage directory.
+
+Simply navigate to the codes source folder on euler and then run
+```shell
+env2lmod
+bash .train
+```
+
+## Configuration
+
+- The script has many command line arguments, all of which have defaults, but here is a list of important ones to run select experiments:
+  - ```block``` to set the block you want to retrain: ```0 to 11```
+  - ```block_d_k``` to set the effective dimensionality of the block to be retrained. Example Value: ```64```
+  - ```block_heads``` to set the number of heads. Example Value: ```12```
+  - ```block_dropout``` to set the dropout probability at the end of the attention block. Example Value: ```0.1```
+  - ```batch_size``` - to set the batch size for training. Literature suggests higher values to average gradients. Example Value: ```64```
+  - ```epochs``` - to set the number of epochs to train the model. Example Value: ```200```
+  - ```lr``` - to set the initial learning rate for training. Example Value: ```1e-3```
+  - ```adam_weight_decay``` - to set the weight decay parameter of adam optim. Example Value: ```0.01```
+  - ```adam_beta1``` - to set the beta1 parameter of adam. Example Value: ```0.9```
+  - ```adam_beta2``` - to set the beta2 parameter of adam. Example Value: ```0.999``` for using pre-trained weights.
+  - ```save_checkpoint_every``` - to indicate how often a permanent checkpoint should be written. Example Value: ```5``` Meaning every 5 epochs a checkpoint is stored on disk
+
+
+## Examples
+
+### Retraining an Attention Block
 
 To retrain a single Block using Bert as Teacher, run the following command:
 
@@ -34,7 +73,7 @@ python train_full_merged_model.py
 
 Note that it is important that the Jupyter book was run before to store a checkpoint containing the retrained Bert's weights.
 
-## merge and train two layers
+### merge and train two layers
 
 To merge two layers and then train the layer, run the following command:
 
