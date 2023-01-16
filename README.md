@@ -40,6 +40,10 @@ bash .train
   
   The example parameters mentioned here are the default hyperparameters and we use these hyperparameters generally. For finetuning we use a lower learning rate of ```1e-4```
 
+### Checkpoints
+Download the checkpoints from Polybox and put them into the folder /models/_checkpoints/wikitext2/
+
+https://polybox.ethz.ch/index.php/s/kYrZwh47E8HUIT2
 
 ## Examples
 
