@@ -132,5 +132,5 @@ dmypy.json
 /models/_checkpoints/
 /out/
 /old/
-/out_squish/
+/out_merged/
 /single_block_evals/

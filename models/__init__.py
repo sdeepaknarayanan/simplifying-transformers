@@ -1,6 +1,6 @@
 from models.bert import BERT, BERTLM
 from models.block_model import BLOCK
-from models.squish_bert import SquishBert
+from models.merged_retrained_bert import MergedRetrainedBert
 
 
 def get(model_name: str):
@@ -10,8 +10,8 @@ def get(model_name: str):
         return  BERTLM
     if model_name == 'BLOCK':
         return BLOCK
-    if model_name == "SquishBert":
-        return SquishBert
+    if model_name == "MergedRetrainedBert":
+        return MergedRetrainedBert
     else:
         raise NotImplementedError
 

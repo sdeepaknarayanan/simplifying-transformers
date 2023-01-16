@@ -4,13 +4,8 @@ import torch.backends.cudnn
 
 import datasets
 import models
-from config.train_config import TrainConfig
-
 torch.backends.cudnn.benchmark = True
-
 from config.train_config import BlockTrainConfig
-
-from parent_bert import get_pretrained_berd
 
 
 def train_block(conf):
@@ -21,7 +16,6 @@ def train_block(conf):
     :return:
 
     """
-
     vocab = datasets.get_vocab(conf)
     # load the dataset specified with --dataset_name & get data loaders
     train_dataset = datasets.get(dataset_name=conf.dataset)(config=conf, vocab=vocab)
@@ -32,24 +26,17 @@ def train_block(conf):
 
     # load the blockmodel specified with --model_name
     block_model = models.get(model_name=conf.model)(config=conf)
-
-    block_model.initialize_sample(batch=next(iter(test_loader)))
     block_model.train()
 
     base_model = models.get(model_name="BERTLM")(config=conf, vocab_size=len(vocab))
-    # for name, parameter in base_model.named_parameters():
-    #     print(name, parameter.size())
-    # exit()
-    base_model.load_state(load_optimizer=False)
+    base_model.load_state(load_optimizer=False, overwrite_path="models/_checkpoints/wikitext2/BERTLM-latest.pth")
     base_model.eval()
-    # base_model = get_pretrained_berd()
 
     logging.log(logging.INFO, "Initialized")
 
     # load loss and evaluation metric
     criterion = torch.nn.CrossEntropyLoss()
 
-    # if a model checkpoint was loaded then the epoch is set to the epoch the model was saved on (continue training)
     epoch = block_model.epoch
 
     # main training loop
@@ -74,9 +61,9 @@ def train_block(conf):
             for layer, transformer in enumerate(base_model.bert.transformer_blocks):
                 if layer == conf.block:
                     break
-                x = transformer.forward(x, mask)
+                x, _ = transformer.forward(x, mask)
 
-            y = transformer.input_sublayer(x, lambda _x: block_model.forward(_x))
+            y = transformer.input_sublayer(x, lambda _x: block_model.forward(_x, mask)[0])
 
             y = transformer.output_sublayer(y, transformer.feed_forward)
             y = transformer.dropout(y)
@@ -84,7 +71,7 @@ def train_block(conf):
             for layer, transformer in enumerate(base_model.bert.transformer_blocks):
                 if layer <= conf.block:
                     continue
-                y = transformer.forward(y, mask)
+                y, _ = transformer.forward(y, mask)
 
             y = base_model.mask_lm(y)
 

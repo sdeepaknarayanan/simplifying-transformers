@@ -9,6 +9,8 @@ class TestConfig(BaseConfig):
         parser = BaseConfig().get_parser()
 
         parser.add_argument('--train', dest='train', action='store_true')
+        parser.add_argument('--percentage_data', type=float, default=0.5,
+                            help='% Amount of Data used to evaluate the Model')
         parser.set_defaults(train=False)
 
         self.parser = parser

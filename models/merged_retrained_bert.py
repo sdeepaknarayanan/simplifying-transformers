@@ -153,7 +153,7 @@ class RetrainedBlock(BaseModule):
                     exit()
 
             else:
-                if self.conf.block_model_checkpoint != '':
+                if self.conf.model_checkpoint != '':
                     logging.warning('Could not find a state dict for block model at the location specified.')
                 self.epoch = 0
                 exit()
@@ -195,13 +195,13 @@ class RetrainedTransformer(BaseModule):
         return self.dropout(x), scores
 
 
-class SquishBert(BaseModel):
+class MergedRetrainedBert(BaseModel):
     def __init__(self,
                  config,
                  vocab_size: int,
                  dks=[64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64],
                  heads=[12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12]):
-        super(SquishBert, self).__init__(config)
+        super(MergedRetrainedBert, self).__init__(config)
         assert len(dks) == len(heads)
         self.dks = dks
         self.heads = heads

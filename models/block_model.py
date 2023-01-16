@@ -51,7 +51,7 @@ class BLOCK(BaseModule):
         x, scores = self.attentionblock(x,x,x, mask=mask, _print=_print)
         return x, scores
 
-    def train_batch(self, data, mask, criterion):
+    def train_batch(self, data, mask, criterion, loss_on_scores: bool):
         """
         Predict for the current batch, compute loss and optimize model weights
         :param data: dictionary containing entries image, label & mask
@@ -72,8 +72,13 @@ class BLOCK(BaseModule):
         # make prediction for the current batch
         prediction, scores = self.forward(x, mask=mask)
 
-        y = torch.softmax(y, dim=-1)
-        loss = criterion(scores, y)
+        if isinstance(criterion, torch.nn.CrossEntropyLoss):
+            y = torch.softmax(y, dim=-1)
+
+        if loss_on_scores:
+            loss = criterion(scores, y)
+        else:
+            loss = criterion(prediction, y)
 
         loss.backward()
         self.optimizer.step()
