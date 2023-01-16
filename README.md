@@ -53,8 +53,18 @@ Then name the files block 0, block 2 ... and put them in a folder namend merge_m
 Then run the following command:
 ```shell
 #Fine tune all layers merged
-python .\finetune-fully-merged.py
+python .\finetune_fully_merged.py
 ```
+
+To fine tune the model conditionally, create the same folder with the merged layers as above.
+
+Then run the following command:
+
+```shell
+#Fine tune all layers merged conditionally
+python .\finetune_conditioned_fully_merged.py
+```
+
 
 To run evaluate on a completly merged model, so 6 merged layers. One must creat a folder with the merged layers the exact same way as for finetuning the merged layers.
 
