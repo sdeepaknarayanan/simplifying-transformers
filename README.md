@@ -37,6 +37,8 @@ bash .train
   - ```adam_beta1``` - to set the beta1 parameter of adam. Example Value: ```0.9```
   - ```adam_beta2``` - to set the beta2 parameter of adam. Example Value: ```0.999``` for using pre-trained weights.
   - ```save_checkpoint_every``` - to indicate how often a permanent checkpoint should be written. Example Value: ```5``` Meaning every 5 epochs a checkpoint is stored on disk
+  
+  The example parameters mentioned here are the default hyperparameters and we use these hyperparameters generally. For finetuning we use a lower learning rate of ```1e-4```
 
 
 ## Examples
