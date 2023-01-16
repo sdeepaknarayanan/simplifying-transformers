@@ -39,3 +39,10 @@ To merge two layers and then train the layer, run the following command
 python .\retrain_merge.py --block 6 --block_heads 12 --block_d_k 64
 ```
 
+To evaluate a merged layer, run the following command
+
+```shell
+#Evaluate the layer we merged above
+python .\eval_merge_layer.py --block 6 --block_heads 12 --block_d_k 64
+
+
