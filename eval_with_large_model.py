@@ -72,16 +72,16 @@ def train_block(conf):
                 for layer, transformer in enumerate(base_model.bert.transformer_blocks):
                     if layer == conf.block:
                         break
-                    x = transformer.forward(x, mask)
+                    x, _ = transformer.forward(x, mask)
 
-                x = transformer.input_sublayer(x, lambda _x: block_model.forward(_x))
+                x = transformer.input_sublayer(x, lambda _x: block_model.forward(_x, mask=mask)[0])
                 x = transformer.output_sublayer(x, transformer.feed_forward)
                 x = transformer.dropout(x)
 
                 for layer, transformer in enumerate(base_model.bert.transformer_blocks):
                     if layer <= conf.block:
                         continue
-                    x = transformer.forward(x, mask)
+                    x, _ = transformer.forward(x, mask=mask)
 
                 retrained_pred = base_model.mask_lm(x)
                 retrained_pred = retrained_pred[torch.arange(data['bert_input'].size(0)), data['mask_index'].long()]

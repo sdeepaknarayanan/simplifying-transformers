@@ -4,13 +4,9 @@ import torch.backends.cudnn
 
 import datasets
 import models
-from config.train_config import TrainConfig, SingleBlockRetrainConfig
+from config.train_config import SingleBlockRetrainConfig
 
 torch.backends.cudnn.benchmark = True
-
-from config.train_config import BlockTrainConfig
-
-from parent_bert import get_pretrained_berd
 
 
 def train_block(conf):
