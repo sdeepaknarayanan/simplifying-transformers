@@ -15,9 +15,9 @@ from parent_bert import get_pretrained_berd
 
 def train_block(conf):
     """ 
-    Merge and train two layers. Similary structured as main in train.py but just for one block.
+    Training for a single attention block. Similary structured as main in train.py but just for one block.
 
-    :param conf: config object from arg parser containing all the block training configuration.
+    :param conf: config object from arg parser containing all the block training configuration
     :return:
     
     """
@@ -40,11 +40,11 @@ def train_block(conf):
     # for name, parameter in base_model.named_parameters():
     #     print(name, parameter.size())
     # exit()
-    base_model.load_state(load_optimizer=False)
+    #base_model.load_state(load_optimizer=False)
     
-    # load basemodel    
-    #base_model = get_pretrained_berd() use to load it directly from a torch_dump_model
+    base_model = get_pretrained_berd()
     base_model.eval()
+
     logging.log(logging.INFO, "Initialized")
 
     # load loss and evaluation metric 
@@ -84,7 +84,6 @@ def train_block(conf):
         block_model.save_and_step()
 
         torch.cuda.empty_cache()
-        
         # Evaluate on test-set.
         for index, data in enumerate(test_loader):
 
@@ -109,7 +108,6 @@ def train_block(conf):
 
         del x, temp_x, mask, segment_info, loss
         torch.cuda.empty_cache()
-        
         # Write the accumulated losses to logs and reset and reset the accumulation
         # criterion.complete_epoch(epoch=epoch, mode='test')
 
