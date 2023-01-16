@@ -31,7 +31,7 @@ bash .train
   - ```block_heads``` to set the number of heads. Example Value: ```12```
   - ```block_dropout``` to set the dropout probability at the end of the attention block. Example Value: ```0.1```
   - ```batch_size``` - to set the batch size for training. Literature suggests higher values to average gradients. Example Value: ```64```
-  - ```epochs``` - to set the number of epochs to train the model. Example Value: ```200```
+  - ```epochs``` - to set the number of epochs to train the model. Example Value: ```200``` (For Merge Experiments -- Train for 200 epochs, for Block Experiments, train for 50 epochs)
   - ```lr``` - to set the initial learning rate for training. Example Value: ```1e-3```
   - ```adam_weight_decay``` - to set the weight decay parameter of adam optim. Example Value: ```0.01```
   - ```adam_beta1``` - to set the beta1 parameter of adam. Example Value: ```0.9```
