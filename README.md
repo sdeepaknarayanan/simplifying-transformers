@@ -68,6 +68,11 @@ Afterwards running the following command will evaluate the Retrained and Teacher
 python .\eval_retrained_12.py --percentage_data 0.5
 ```
 
+To train a model by computing a loss over the output probabilities run
+```shell
+python train_block_till_end.py --block 4
+```
+
 To finetune the 12 retrained Layers run
 ```shell
 python train_full_merged_model.py
