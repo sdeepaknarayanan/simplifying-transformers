@@ -24,7 +24,12 @@ Afterwards running the following command will evaluate the Retrained and Teacher
 
 ```shell
 # This will use 50% of the Test Data to run the Evaluation
-python .\eval_merged_12.py --percentage_data 0.5
+python .\eval_retrained_12.py --percentage_data 0.5
+```
+
+To finetune the 12 retrained Layers run
+```shell
+python train_full_merged_model.py
 ```
 
 Note that it is important that the Jupyter book was run before to store a checkpoint containing the retrained Bert's weights.

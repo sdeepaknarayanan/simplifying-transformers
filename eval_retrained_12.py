@@ -57,7 +57,7 @@ def main(conf):
             teacher_pred = teacher_pred[torch.arange(data['bert_input'].size(0)), data['mask_index'].long()]
             teacher_pred = torch.argmax(teacher_pred, dim=1)
 
-            # get student predictions and score models
+            # get bert large predictions and score models
             for sample_index in range(data['bert_input'].size(0)):
                 sentence = vocab.from_seq(data['bert_input'][sample_index], join=True)
                 large_tokens = tokenizer_large(sentence, return_tensors="pt").to(conf.device)
