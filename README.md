@@ -63,7 +63,7 @@ Then run the following command:
 ```shell
 #Evaluate a fully merged model
 python .\evaluate_fully_merged_layer.py
-
+```
 
 
 
