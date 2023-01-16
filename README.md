@@ -46,8 +46,8 @@ To evaluate a merged layer, run the following command:
 python .\eval_merge_layer.py --block 6 --block_heads 12 --block_d_k 64
 ```
 
-To fine tune a model with 6 merge layers. First run the train layer for all even block so for block 0,2,4,6,8,10
-Then name the files block 0, block 2 ... and put them in a folder namend merge_models_best 
+To fine tune a model with 6 merge layers. First run the train layer for all even block so for block 0,2,4,6,8,10.
+Then name the files block 0, block 2 ... and put them in a folder namend merge_models_best. 
 Then run the following command:
 ```shell
 #Fine tune all layers merged
